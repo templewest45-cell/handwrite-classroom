@@ -30,6 +30,11 @@
   let currentQuestionPos = 1;
   let roomStatus = "CREATED";
   const resumeKey = "hwc:resume:" + roomId;
+  const wsProto = location.protocol === "https:" ? "wss" : "ws";
+
+  function playerWsUrl(pid) {
+    return wsProto + "://" + location.host + "/api/rooms/" + roomId + "/ws/player?participantId=" + encodeURIComponent(pid);
+  }
 
   function getResumeToken() {
     try {
@@ -227,9 +232,7 @@
         reconnectTimer = setTimeout(() => {
           reconnectTimer = null;
           if (!participantId || roomDeleted || isConnected()) return;
-          const nextWs = new WebSocket(
-            proto + "://" + location.host + "/api/rooms/" + roomId + "/ws/player?participantId=" + encodeURIComponent(participantId),
-          );
+          const nextWs = new WebSocket(playerWsUrl(participantId));
           ws = nextWs;
           setStatus("再接続中...");
           updateControlState();
@@ -322,8 +325,7 @@
     if (typeof data.resumeToken === "string" && data.resumeToken.trim()) {
       setResumeToken(data.resumeToken);
     }
-    const proto = location.protocol === "https:" ? "wss" : "ws";
-    ws = new WebSocket(proto + "://" + location.host + "/api/rooms/" + roomId + "/ws/player?participantId=" + encodeURIComponent(participantId));
+    ws = new WebSocket(playerWsUrl(participantId));
     setStatus("WS接続中...");
     updateControlState();
     attachSocketHandlers(ws, (data.resumed ? "再参加完了" : "参加完了") + ": slot " + data.slotNumber);
