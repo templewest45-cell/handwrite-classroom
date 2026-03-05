@@ -245,6 +245,12 @@ export function renderPlayerHtml(roomId: string): string {
     input, button, select { padding:8px 10px; border:1px solid var(--line); border-radius:8px; }
     button { background:var(--accent); color:#fff; border:none; cursor:pointer; }
     button.secondary { background:#475569; }
+    button.submit-fab {
+      position:absolute; right:14px; bottom:14px; z-index:5;
+      background:#dc2626; color:#fff; font-weight:700;
+      box-shadow:0 6px 16px rgba(0,0,0,0.22);
+    }
+    button.submit-fab:disabled { background:#94a3b8; }
     button:disabled { opacity:0.45; cursor:not-allowed; }
     .pill { font-size:12px; border-radius:999px; padding:3px 10px; background:#e7e5e4; color:#292524; }
     .pill.warn { background:#fee2e2; color:#7f1d1d; }
@@ -295,7 +301,6 @@ export function renderPlayerHtml(roomId: string): string {
           <option value="10">10</option>
         </select>
       </label>
-      <button id="submitBtn">提出</button>
       <button class="secondary" id="clearBtn">全消去</button>
       <span class="pill warn" id="lockState">ロック中</span>
       <span id="status">未参加</span>
@@ -306,6 +311,7 @@ export function renderPlayerHtml(roomId: string): string {
     <div id="gradeBanner"></div>
     <div class="canvas-wrap locked" id="canvasWrap">
       <canvas id="canvas" width="960" height="640"></canvas>
+      <button id="submitBtn" class="submit-fab">提出</button>
       <div id="gradeMark">○</div>
       <div id="lockOverlay">ホストがロック中</div>
     </div>
@@ -334,6 +340,10 @@ export function renderSummaryHtml(roomId: string): string {
     .pill { font-size:12px; border-radius:999px; padding:3px 10px; background:#e2e8f0; color:#1e293b; }
     .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:12px; }
     #stageBadge { font-size:26px; font-weight:800; letter-spacing:0.08em; }
+    #resultGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:10px; padding:10px; background:#f8fafc; }
+    .metricLabel { font-size:12px; color:var(--muted); }
+    .metricValue { font-size:22px; font-weight:800; margin-top:4px; }
     #board { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; }
     .tile { border:1px solid var(--line); border-radius:10px; padding:8px; background:#f8fafc; }
     .tileHead { display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:6px; }
@@ -355,6 +365,23 @@ export function renderSummaryHtml(roomId: string): string {
     <section class="card">
       <div id="stageBadge">解答中</div>
       <div class="muted" id="stageSub">各生徒の途中解答を表示しています</div>
+    </section>
+    <section class="card">
+      <h2>結果</h2>
+      <div id="resultGrid">
+        <div class="metric">
+          <div class="metricLabel">正解率</div>
+          <div class="metricValue" id="accuracyRate">-</div>
+        </div>
+        <div class="metric">
+          <div class="metricLabel">正解 / 採点済み</div>
+          <div class="metricValue" id="correctCount">-</div>
+        </div>
+        <div class="metric">
+          <div class="metricLabel">提出 / 参加</div>
+          <div class="metricValue" id="submittedCount">-</div>
+        </div>
+      </div>
     </section>
     <section class="card">
       <h2>解答一覧</h2>

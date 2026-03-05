@@ -6,6 +6,9 @@
   const updatedAtEl = document.getElementById("updatedAt");
   const stageBadgeEl = document.getElementById("stageBadge");
   const stageSubEl = document.getElementById("stageSub");
+  const accuracyRateEl = document.getElementById("accuracyRate");
+  const correctCountEl = document.getElementById("correctCount");
+  const submittedCountEl = document.getElementById("submittedCount");
   const boardEl = document.getElementById("board");
 
   function setError(message) {
@@ -28,6 +31,16 @@
       stageBadgeEl.textContent = "終了";
       stageSubEl.textContent = "最終解答を表示しています";
     }
+
+    const totals = data && typeof data.totals === "object" && data.totals ? data.totals : {};
+    const correct = Number(totals.correct) || 0;
+    const graded = Number(totals.graded) || 0;
+    const submitted = Number(totals.submitted) || 0;
+    const joined = Number(totals.joined) || 0;
+    const rate = graded > 0 ? Math.round((correct / graded) * 100) : 0;
+    accuracyRateEl.textContent = rate + "%";
+    correctCountEl.textContent = correct + " / " + graded;
+    submittedCountEl.textContent = submitted + " / " + joined;
 
     const rows = Array.isArray(data.slots) ? data.slots : [];
     boardEl.innerHTML = rows

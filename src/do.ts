@@ -519,6 +519,23 @@ export class RoomDurableObject {
       }
 
       if (payload.type === "control:next") {
+        const questionCount = Array.isArray(room.questions) ? room.questions.length : 0;
+        const isLastQuestion = questionCount > 0 && room.currentQuestionPos >= questionCount;
+        if (isLastQuestion) {
+          room.status = "CLOSED";
+          room.liveSlot = null;
+          await this.ctx.storage.put("room", room);
+          await this.appendAudit("control_end_auto", {
+            roomId: room.roomId,
+            currentQuestionPos: room.currentQuestionPos,
+            questionCount,
+          });
+          this.broadcastRoomStatus(room);
+          this.broadcastToHosts({ type: "live:changed", liveSlot: null });
+          this.broadcastToPlayers({ type: "answer:lock", locked: true });
+          return;
+        }
+
         room.currentQuestionPos += 1;
         room.status = "OPEN";
         room.liveSlot = null;
@@ -985,4 +1002,3 @@ export class RoomDurableObject {
     return errorResponse(404, "not_found");
   }
 }
-
