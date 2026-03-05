@@ -1,0 +1,65 @@
+﻿export function renderSummaryScript(roomId: string): string {
+  return `(() => {
+  const roomId = ${JSON.stringify(roomId)};
+  const statusPillEl = document.getElementById("statusPill");
+  const questionPillEl = document.getElementById("questionPill");
+  const updatedAtEl = document.getElementById("updatedAt");
+  const stageBadgeEl = document.getElementById("stageBadge");
+  const stageSubEl = document.getElementById("stageSub");
+  const boardEl = document.getElementById("board");
+
+  function setError(message) {
+    statusPillEl.textContent = "状態: エラー";
+    questionPillEl.textContent = message;
+  }
+
+  function render(data) {
+    statusPillEl.textContent = "状態: " + data.status;
+    questionPillEl.textContent = "問題: " + (data.questionText || ("第" + data.currentQuestionPos + "問"));
+    updatedAtEl.textContent = "更新: " + new Date().toLocaleTimeString();
+
+    if (data.status === "OPEN" || data.status === "CREATED") {
+      stageBadgeEl.textContent = "解答中";
+      stageSubEl.textContent = "各生徒の途中解答を表示しています";
+    } else if (data.status === "LOCKED") {
+      stageBadgeEl.textContent = "解答締切";
+      stageSubEl.textContent = "提出済みの解答を表示しています";
+    } else {
+      stageBadgeEl.textContent = "終了";
+      stageSubEl.textContent = "最終解答を表示しています";
+    }
+
+    const rows = Array.isArray(data.slots) ? data.slots : [];
+    boardEl.innerHTML = rows
+      .map((s) => {
+        const image = typeof s.previewImage === "string" && s.previewImage
+          ? "<img class='tileImg' src='" + s.previewImage + "' alt='slot " + s.slotNumber + " answer' />"
+          : "<div class='empty'>未入力</div>";
+        return "<article class='tile'>" +
+          "<div class='tileHead'><strong>Slot " + s.slotNumber + "</strong><span>" + s.state + "</span></div>" +
+          image +
+          "</article>";
+      })
+      .join("");
+  }
+
+  async function reload() {
+    try {
+      const res = await fetch("/api/rooms/" + roomId + "/public-summary", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data && data.error ? data.error : "取得失敗");
+        return;
+      }
+      render(data);
+    } catch {
+      setError("通信失敗");
+    }
+  }
+
+  void reload();
+  setInterval(() => {
+    void reload();
+  }, 1200);
+})();`;
+}

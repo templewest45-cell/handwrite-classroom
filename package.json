@@ -1,0 +1,20 @@
+{
+  "name": "handwrite-classroom",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "tsc --noEmit",
+    "test:api": "node --test tests/api.smoke.test.mjs",
+    "test:ws": "node --test tests/ws.flow.test.mjs",
+    "test:all": "npm run test:api && npm run test:ws",
+    "verify": "npm run check && npm run test:all"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260225.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.2.0"
+  }
+}

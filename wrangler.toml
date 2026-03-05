@@ -1,0 +1,12 @@
+name = "handwrite-classroom"
+main = "src/index.ts"
+compatibility_date = "2026-03-03"
+
+[durable_objects]
+bindings = [
+  { name = "ROOM_DO", class_name = "RoomDurableObject" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RoomDurableObject"]
