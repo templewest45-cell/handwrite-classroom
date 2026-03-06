@@ -360,6 +360,8 @@ export function renderSummaryHtml(roomId: string): string {
     .muted { color:var(--muted); font-size:13px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
     .pill { font-size:12px; border-radius:999px; padding:3px 10px; background:#e2e8f0; color:#1e293b; }
+    .controlBtn { border:none; border-radius:8px; padding:8px 12px; font:inherit; background:#0f766e; color:#fff; cursor:pointer; }
+    .controlBtn:disabled { opacity:0.45; cursor:not-allowed; }
     .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:12px; }
     #stageBadge { font-size:26px; font-weight:800; letter-spacing:0.08em; }
     #resultGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
@@ -399,6 +401,8 @@ export function renderSummaryHtml(roomId: string): string {
       <span class="pill" id="statusPill">状態: -</span>
       <span class="pill" id="questionPill">問題: -</span>
       <span class="muted" id="updatedAt">更新: -</span>
+      <button id="nextFromSummaryBtn" class="controlBtn hidden">次の問題へ</button>
+      <span class="muted hidden" id="summaryControlStatus">接続待機</span>
     </div>
   </header>
   <main>

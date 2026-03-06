@@ -105,7 +105,7 @@
 
   const playerUrl = location.origin + "/player/" + roomId;
   const hostUrl = location.origin + "/host/" + roomId + "?hostKey=" + encodeURIComponent(hostKey);
-  const summaryUrl = location.origin + "/summary/" + roomId;
+  const summaryUrl = location.origin + "/summary/" + roomId + "?hostKey=" + encodeURIComponent(hostKey);
 
   playerUrlEl.href = playerUrl;
   playerUrlEl.textContent = playerUrl;

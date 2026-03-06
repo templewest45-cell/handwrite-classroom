@@ -27,7 +27,7 @@
   const logEl = document.getElementById("log");
 
   hostKeyEl.value = qs.get("hostKey") || "";
-  const summaryUrl = location.origin + "/summary/" + roomId;
+  const summaryUrl = location.origin + "/summary/" + roomId + "?hostKey=" + encodeURIComponent(hostKeyEl.value || "");
   if (projectorLinkEl) {
     projectorLinkEl.href = summaryUrl;
     projectorLinkEl.textContent = summaryUrl;
@@ -175,6 +175,16 @@
     if (action === "grade-o") return sendControlAction({ type: "grade:set", slotNumber: selectedJudgeSlot, grade: "O" });
     if (action === "grade-x") return sendControlAction({ type: "grade:set", slotNumber: selectedJudgeSlot, grade: "X" });
     if (action === "resubmit") return sendControlAction({ type: "resubmit:allow", slotNumber: selectedJudgeSlot });
+  }
+
+  function resetSlotsForNextQuestion() {
+    for (const slot of Object.values(model.slots)) {
+      slot.draftPreview = null;
+      slot.finalImage = null;
+      slot.grade = null;
+      slot.state = slot.participantId ? "JOINED" : "EMPTY";
+    }
+    selectedJudgeSlot = null;
   }
 
   function render() {
@@ -434,7 +444,7 @@
           model.currentQuestionText = m.questionText;
         }
         if (model.currentQuestionPos !== prevPos) {
-          selectedJudgeSlot = null;
+          resetSlotsForNextQuestion();
         }
       } else if (m.type === "question:update") {
         const prevPos = model.currentQuestionPos;
@@ -443,7 +453,7 @@
           model.currentQuestionText = m.questionText;
         }
         if (model.currentQuestionPos !== prevPos) {
-          selectedJudgeSlot = null;
+          resetSlotsForNextQuestion();
         }
       } else if (m.type === "live:stroke") {
         if (model.liveSlot === m.slotNumber) {

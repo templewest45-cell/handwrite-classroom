@@ -1,9 +1,13 @@
 ﻿export function renderSummaryScript(roomId: string): string {
   return `(() => {
   const roomId = ${JSON.stringify(roomId)};
+  const qs = new URLSearchParams(location.search);
+  const hostKey = (qs.get("hostKey") || "").trim();
   const statusPillEl = document.getElementById("statusPill");
   const questionPillEl = document.getElementById("questionPill");
   const updatedAtEl = document.getElementById("updatedAt");
+  const nextFromSummaryBtnEl = document.getElementById("nextFromSummaryBtn");
+  const summaryControlStatusEl = document.getElementById("summaryControlStatus");
   const stageBadgeEl = document.getElementById("stageBadge");
   const stageSubEl = document.getElementById("stageSub");
   const accuracyRateEl = document.getElementById("accuracyRate");
@@ -16,9 +20,46 @@
   const finalQuestionsTitleEl = document.getElementById("finalQuestionsTitle");
   const finalQuestionsEl = document.getElementById("finalQuestions");
 
+  let hostWs = null;
+
   function setError(message) {
     statusPillEl.textContent = "状態: エラー";
     questionPillEl.textContent = message;
+  }
+
+  function updateControlStatus(text, isError) {
+    if (!summaryControlStatusEl) return;
+    summaryControlStatusEl.textContent = text;
+    summaryControlStatusEl.style.color = isError ? "#b91c1c" : "#475569";
+  }
+
+  function isHostConnected() {
+    return !!hostWs && hostWs.readyState === 1;
+  }
+
+  function sendControl(msg) {
+    if (!isHostConnected()) {
+      updateControlStatus("未接続", true);
+      return false;
+    }
+    hostWs.send(JSON.stringify(msg));
+    return true;
+  }
+
+  function connectHostControl() {
+    if (!hostKey) return;
+    if (hostWs && (hostWs.readyState === 0 || hostWs.readyState === 1)) return;
+    const proto = location.protocol === "https:" ? "wss" : "ws";
+    const wsUrl = proto + "://" + location.host + "/api/rooms/" + roomId + "/ws/host?hostKey=" + encodeURIComponent(hostKey);
+    hostWs = new WebSocket(wsUrl);
+    updateControlStatus("接続中...", false);
+    hostWs.onopen = () => updateControlStatus("接続済み", false);
+    hostWs.onclose = () => {
+      updateControlStatus("切断", true);
+      hostWs = null;
+      setTimeout(connectHostControl, 1000);
+    };
+    hostWs.onerror = () => updateControlStatus("接続エラー", true);
   }
 
   function render(data) {
@@ -35,6 +76,10 @@
     } else {
       stageBadgeEl.textContent = "終了";
       stageSubEl.textContent = "最終解答を表示しています";
+    }
+
+    if (nextFromSummaryBtnEl) {
+      nextFromSummaryBtnEl.disabled = data.status === "CREATED" || data.status === "CLOSED" || !isHostConnected();
     }
 
     const totals = data && typeof data.totals === "object" && data.totals ? data.totals : {};
@@ -126,6 +171,16 @@
         return "<div class='qhItem'><div class='qhTitle'>第" + q.questionPos + "問: " + q.questionText + "</div><div class='qhAnswerGrid'>" + answersHtml + "</div></div>";
       })
       .join("");
+  }
+
+  if (hostKey) {
+    nextFromSummaryBtnEl.classList.remove("hidden");
+    summaryControlStatusEl.classList.remove("hidden");
+    nextFromSummaryBtnEl.addEventListener("click", () => {
+      if (!sendControl({ type: "control:next" })) return;
+      updateControlStatus("次の問題へ送信", false);
+    });
+    connectHostControl();
   }
 
   async function reload() {
