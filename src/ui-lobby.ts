@@ -8,6 +8,7 @@
   const playerUrlEl = document.getElementById("playerUrl");
   const playerQrEl = document.getElementById("playerQr");
   const hostUrlEl = document.getElementById("hostUrl");
+  const summaryUrlEl = document.getElementById("summaryUrl");
   const statusEl = document.getElementById("status");
   const questionEl = document.getElementById("question");
   const joinedEl = document.getElementById("joinedCount");
@@ -104,11 +105,14 @@
 
   const playerUrl = location.origin + "/player/" + roomId;
   const hostUrl = location.origin + "/host/" + roomId + "?hostKey=" + encodeURIComponent(hostKey);
+  const summaryUrl = location.origin + "/summary/" + roomId;
 
   playerUrlEl.href = playerUrl;
   playerUrlEl.textContent = playerUrl;
   playerQrEl.src = qrSrc(playerUrl);
   hostUrlEl.href = hostUrl;
+  summaryUrlEl.href = summaryUrl;
+  summaryUrlEl.textContent = summaryUrl;
 
   startBtn.addEventListener("click", () => {
     if (!send({ type: "control:open" })) {

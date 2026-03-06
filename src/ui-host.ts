@@ -16,6 +16,7 @@
   const roomStatusEl = document.getElementById("roomStatus");
   const currentQuestionLabelEl = document.getElementById("currentQuestionLabel");
   const nextQuestionLabelEl = document.getElementById("nextQuestionLabel");
+  const projectorLinkEl = document.getElementById("projectorLink");
   const questionInputEl = document.getElementById("questionInput");
   const applyQuestionsBtn = document.getElementById("applyQuestionsBtn");
   const realtimeBarEl = document.getElementById("realtimeBar");
@@ -23,6 +24,9 @@
   const logEl = document.getElementById("log");
 
   hostKeyEl.value = qs.get("hostKey") || "";
+  const summaryUrl = location.origin + "/summary/" + roomId;
+  projectorLinkEl.href = summaryUrl;
+  projectorLinkEl.textContent = summaryUrl;
 
   let ws = null;
   let roomDeleted = false;

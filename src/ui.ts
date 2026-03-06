@@ -124,11 +124,13 @@ export function renderHostHtml(roomId: string): string {
     .qline { font-size:14px; color:#1f2937; }
     .qline + .qline { margin-top:4px; }
     .qlabel { color:#64748b; margin-right:6px; }
+    #projectorLink { color:#0f766e; text-decoration:none; word-break:break-all; }
+    #projectorLink:hover { text-decoration:underline; }
     body.presenter header .control { display:none; }
     body.presenter #log { display:none; }
     body.presenter #questionEditor { display:none; }
-    body.presenter #slots { pointer-events:none; }
-    body.presenter #slots button[data-action] { display:none; }
+    body.presenter #realtimeBar { display:none; }
+    body.presenter #slots { display:none; }
   </style>
 </head>
 <body>
@@ -154,6 +156,7 @@ export function renderHostHtml(roomId: string): string {
       <h2>問題状況</h2>
       <div class="qline"><span class="qlabel">現在:</span><span id="currentQuestionLabel">-</span></div>
       <div class="qline"><span class="qlabel">次:</span><span id="nextQuestionLabel">-</span></div>
+      <div class="qline"><span class="qlabel">投影:</span><a id="projectorLink" target="_blank" rel="noreferrer">-</a></div>
     </section>
     <div id="questionEditor">
       <div class="row">
@@ -192,6 +195,7 @@ export function renderLobbyHtml(roomId: string): string {
     .btn.main { background:var(--accent); }
     .btn.sub { background:#475569; }
     .meta { color:var(--muted); font-size:13px; }
+    .publicLink { margin-top:8px; display:grid; gap:4px; }
     a { color:#0f766e; text-decoration:none; word-break:break-all; }
     a:hover { text-decoration:underline; }
   </style>
@@ -223,6 +227,10 @@ export function renderLobbyHtml(roomId: string): string {
       <div id="question" style="margin-top:10px;">問題: 第1問</div>
       <div class="meta" style="margin-top:8px;">
         詳細管理: <a id="hostUrl" target="_blank" rel="noreferrer">Host画面を開く</a>
+      </div>
+      <div class="publicLink">
+        <div class="meta">投影用 Summary URL</div>
+        <a id="summaryUrl" target="_blank" rel="noreferrer"></a>
       </div>
     </section>
   </main>
