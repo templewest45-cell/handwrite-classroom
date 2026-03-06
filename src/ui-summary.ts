@@ -3,6 +3,7 @@
   const roomId = ${JSON.stringify(roomId)};
   const qs = new URLSearchParams(location.search);
   const hostKey = (qs.get("hostKey") || "").trim();
+  const hostUrl = location.origin + "/host/" + roomId + (hostKey ? ("?hostKey=" + encodeURIComponent(hostKey)) : "");
   const statusPillEl = document.getElementById("statusPill");
   const questionPillEl = document.getElementById("questionPill");
   const updatedAtEl = document.getElementById("updatedAt");
@@ -179,6 +180,9 @@
     nextFromSummaryBtnEl.addEventListener("click", () => {
       if (!sendControl({ type: "control:next" })) return;
       updateControlStatus("次の問題へ送信", false);
+      setTimeout(() => {
+        location.href = hostUrl;
+      }, 250);
     });
     connectHostControl();
   }
