@@ -168,6 +168,7 @@ export function renderHostHtml(roomId: string): string {
       <div id="viewOptions">
         <label><input id="showNextQuestionToggle" type="checkbox" /> 次の問題文を表示</label>
         <label><input id="showAnswersToggle" type="checkbox" /> 生徒の解答を表示</label>
+        <label><input id="showLogToggle" type="checkbox" checked /> 管理ログを表示</label>
       </div>
     </section>
     <section id="judgePanel">

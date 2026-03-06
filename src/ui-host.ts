@@ -20,6 +20,7 @@
   const projectorLinkEl = document.getElementById("projectorLink");
   const showNextQuestionToggleEl = document.getElementById("showNextQuestionToggle");
   const showAnswersToggleEl = document.getElementById("showAnswersToggle");
+  const showLogToggleEl = document.getElementById("showLogToggle");
   const judgeListEl = document.getElementById("judgeList");
   const realtimeBarEl = document.getElementById("realtimeBar");
   const slotsEl = document.getElementById("slots");
@@ -42,6 +43,7 @@
   let selectedJudgeSlot = null;
   let showNextQuestion = false;
   let showAnswers = false;
+  let showLog = true;
   let model = {
     status: "CREATED",
     currentQuestionPos: 1,
@@ -183,9 +185,11 @@
     }
     slotsEl.style.display = showAnswers ? "" : "none";
     realtimeBarEl.style.display = showAnswers ? "" : "none";
+    logEl.style.display = showLog ? "" : "none";
     if (nextQuestionRowEl) nextQuestionRowEl.style.display = showNextQuestion ? "" : "none";
     if (showNextQuestionToggleEl) showNextQuestionToggleEl.checked = showNextQuestion;
     if (showAnswersToggleEl) showAnswersToggleEl.checked = showAnswers;
+    if (showLogToggleEl) showLogToggleEl.checked = showLog;
 
     for (const s of items) {
       const selectable = !!s.participantId;
@@ -238,10 +242,11 @@
       const canJudge = !!s.finalImage;
       const judgeRow = document.createElement("div");
       judgeRow.className = "judgeRow";
+      const participantLabel = "参加者" + s.slotNumber;
+      const participantName = s.participantName || "-";
       judgeRow.innerHTML =
-        "<div class='judgeHead'><strong>Slot " + s.slotNumber + " " + (s.participantName || s.participantId || "-") + "</strong>" +
+        "<div class='judgeHead'><strong>" + participantLabel + " " + participantName + "</strong>" +
         "<span>" + (selectedJudgeSlot === s.slotNumber ? "選択中" : "") + "</span></div>" +
-        "<div class='judgeMeta'>状態: " + s.state + " / 評価: " + (s.grade || "-") + "</div>" +
         "<div class='judgeButtons'>" +
         "<button data-action='grade-o' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">○</button>" +
         "<button data-action='grade-x' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">×</button>" +
@@ -519,6 +524,12 @@
   if (showAnswersToggleEl) {
     showAnswersToggleEl.addEventListener("change", () => {
       showAnswers = !!showAnswersToggleEl.checked;
+      render();
+    });
+  }
+  if (showLogToggleEl) {
+    showLogToggleEl.addEventListener("change", () => {
+      showLog = !!showLogToggleEl.checked;
       render();
     });
   }
