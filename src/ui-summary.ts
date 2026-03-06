@@ -13,6 +13,7 @@
   const finalStudentsCardEl = document.getElementById("finalStudentsCard");
   const finalStudentsEl = document.getElementById("finalStudents");
   const finalQuestionsCardEl = document.getElementById("finalQuestionsCard");
+  const finalQuestionsTitleEl = document.getElementById("finalQuestionsTitle");
   const finalQuestionsEl = document.getElementById("finalQuestions");
 
   function setError(message) {
@@ -65,14 +66,23 @@
       })
       .join("");
 
+    const questions = Array.isArray(data.questions) ? data.questions : [];
     if (data.status !== "CLOSED") {
       finalStudentsCardEl.classList.add("hidden");
-      finalQuestionsCardEl.classList.add("hidden");
+      if (questions.length > 0) {
+        const latest = questions[questions.length - 1];
+        finalQuestionsCardEl.classList.remove("hidden");
+        finalQuestionsTitleEl.textContent = "前問の結果";
+        finalQuestionsEl.innerHTML = renderQuestionCards([latest]);
+      } else {
+        finalQuestionsCardEl.classList.add("hidden");
+      }
       return;
     }
 
     finalStudentsCardEl.classList.remove("hidden");
     finalQuestionsCardEl.classList.remove("hidden");
+    finalQuestionsTitleEl.textContent = "全問題の結果";
 
     const students = Array.isArray(data.students) ? data.students : [];
     if (!students.length) {
@@ -90,22 +100,30 @@
         "</tbody></table>";
     }
 
-    const questions = Array.isArray(data.questions) ? data.questions : [];
     if (!questions.length) {
       finalQuestionsEl.innerHTML = "<div class='muted'>問題履歴がありません</div>";
       return;
     }
-    finalQuestionsEl.innerHTML = questions
+    finalQuestionsEl.innerHTML = renderQuestionCards(questions);
+  }
+
+  function renderQuestionCards(questions) {
+    return questions
       .map((q) => {
         const questionRows = Array.isArray(q.results) ? q.results : [];
-        const rowsHtml = questionRows
+        const answersHtml = questionRows
           .map((r) => {
-            const name = typeof r.participantName === "string" && r.participantName.trim() ? r.participantName.trim() : (r.participantId || ("参加者" + r.slotNumber));
+            const name = typeof r.participantName === "string" && r.participantName.trim()
+              ? r.participantName.trim()
+              : (r.participantId || ("参加者" + r.slotNumber));
             const grade = r.grade || "-";
-            return "<div class='qhRow'><span>" + name + "</span><span>採点: " + grade + "</span></div>";
+            const image = typeof r.finalImage === "string" && r.finalImage
+              ? "<img src='" + r.finalImage + "' alt='" + name + " answer' />"
+              : "<div class='qhAnswerEmpty'>未提出</div>";
+            return "<div class='qhAnswer'><div class='qhAnswerHead'><span>" + name + "</span><span>採点: " + grade + "</span></div>" + image + "</div>";
           })
           .join("");
-        return "<div class='qhItem'><div class='qhTitle'>第" + q.questionPos + "問: " + q.questionText + "</div><div class='qhRows'>" + rowsHtml + "</div></div>";
+        return "<div class='qhItem'><div class='qhTitle'>第" + q.questionPos + "問: " + q.questionText + "</div><div class='qhAnswerGrid'>" + answersHtml + "</div></div>";
       })
       .join("");
   }

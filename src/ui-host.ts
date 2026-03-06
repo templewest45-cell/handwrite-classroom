@@ -427,15 +427,23 @@
         liveStrokeCount = 0;
         liveWindowStart = Date.now();
       } else if (m.type === "room:status") {
+        const prevPos = model.currentQuestionPos;
         model.status = m.status;
         model.currentQuestionPos = m.currentQuestionPos || model.currentQuestionPos;
         if (typeof m.questionText === "string" && m.questionText) {
           model.currentQuestionText = m.questionText;
         }
+        if (model.currentQuestionPos !== prevPos) {
+          selectedJudgeSlot = null;
+        }
       } else if (m.type === "question:update") {
+        const prevPos = model.currentQuestionPos;
         model.currentQuestionPos = m.currentQuestionPos || model.currentQuestionPos;
         if (typeof m.questionText === "string" && m.questionText) {
           model.currentQuestionText = m.questionText;
+        }
+        if (model.currentQuestionPos !== prevPos) {
+          selectedJudgeSlot = null;
         }
       } else if (m.type === "live:stroke") {
         if (model.liveSlot === m.slotNumber) {

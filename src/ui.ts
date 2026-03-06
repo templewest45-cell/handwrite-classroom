@@ -383,6 +383,11 @@ export function renderSummaryHtml(roomId: string): string {
     .qhTitle { font-size:14px; font-weight:700; margin-bottom:6px; }
     .qhRows { display:grid; gap:6px; }
     .qhRow { display:flex; justify-content:space-between; gap:8px; font-size:13px; }
+    .qhAnswerGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin-top:6px; }
+    .qhAnswer { border:1px solid var(--line); border-radius:8px; background:#fff; padding:6px; display:grid; gap:4px; }
+    .qhAnswerHead { font-size:12px; display:flex; justify-content:space-between; }
+    .qhAnswer img { width:100%; aspect-ratio:4/3; object-fit:contain; border:1px solid var(--line); border-radius:6px; background:#fff; }
+    .qhAnswerEmpty { width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; border:1px dashed var(--line); border-radius:6px; color:var(--muted); font-size:12px; }
     .hidden { display:none; }
   </style>
 </head>
@@ -428,7 +433,7 @@ export function renderSummaryHtml(roomId: string): string {
       <div id="finalStudents"></div>
     </section>
     <section class="card hidden" id="finalQuestionsCard">
-      <h2>全問題の結果</h2>
+      <h2 id="finalQuestionsTitle">全問題の結果</h2>
       <div id="finalQuestions" class="questionHistory"></div>
     </section>
   </main>
