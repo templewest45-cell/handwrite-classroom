@@ -15,8 +15,13 @@
   const statusEl = document.getElementById("status");
   const roomStatusEl = document.getElementById("roomStatus");
   const currentQuestionLabelEl = document.getElementById("currentQuestionLabel");
+  const nextQuestionRowEl = document.getElementById("nextQuestionRow");
   const nextQuestionLabelEl = document.getElementById("nextQuestionLabel");
   const projectorLinkEl = document.getElementById("projectorLink");
+  const showNextQuestionToggleEl = document.getElementById("showNextQuestionToggle");
+  const showAnswersToggleEl = document.getElementById("showAnswersToggle");
+  const showJudgeButtonsToggleEl = document.getElementById("showJudgeButtonsToggle");
+  const judgeHintEl = document.getElementById("judgeHint");
   const questionInputEl = document.getElementById("questionInput");
   const applyQuestionsBtn = document.getElementById("applyQuestionsBtn");
   const realtimeBarEl = document.getElementById("realtimeBar");
@@ -34,6 +39,10 @@
   let reconnectTimer = null;
   let reconnectAttempts = 0;
   let everConnected = false;
+  let selectedJudgeSlot = null;
+  let showNextQuestion = false;
+  let showAnswers = false;
+  let showJudgeButtons = false;
   let model = {
     status: "CREATED",
     currentQuestionPos: 1,
@@ -61,6 +70,12 @@
 
   function log(msg) {
     logEl.textContent = "[" + new Date().toLocaleTimeString() + "] " + msg + "\\n" + logEl.textContent;
+  }
+
+  function isTypingTarget(el) {
+    if (!el || !(el instanceof HTMLElement)) return false;
+    const tag = (el.tagName || "").toLowerCase();
+    return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable;
   }
 
   function safeParse(text) {
@@ -132,10 +147,36 @@
     updatePresenterToggleLabel();
   }
 
+  function selectJudgeSlot(slotNumber) {
+    if (!Number.isFinite(slotNumber)) return false;
+    const slot = model.slots[slotNumber];
+    if (!slot || !slot.participantId) return false;
+    selectedJudgeSlot = slotNumber;
+    render();
+    return true;
+  }
+
+  function runJudgeShortcut(action) {
+    if (!Number.isFinite(selectedJudgeSlot)) {
+      log("採点対象slotを先に選択してください (1-8キー)");
+      return;
+    }
+    if (action === "grade-o") return sendControlAction({ type: "grade:set", slotNumber: selectedJudgeSlot, grade: "O" });
+    if (action === "grade-x") return sendControlAction({ type: "grade:set", slotNumber: selectedJudgeSlot, grade: "X" });
+    if (action === "resubmit") return sendControlAction({ type: "resubmit:allow", slotNumber: selectedJudgeSlot });
+  }
+
   function render() {
     const now = Date.now();
     const items = Object.values(model.slots).sort((a, b) => a.slotNumber - b.slotNumber);
     slotsEl.innerHTML = "";
+    slotsEl.style.display = showAnswers ? "" : "none";
+    realtimeBarEl.style.display = showAnswers ? "" : "none";
+    nextQuestionRowEl.style.display = showNextQuestion ? "" : "none";
+    judgeHintEl.style.display = showJudgeButtons ? "none" : "";
+    showNextQuestionToggleEl.checked = showNextQuestion;
+    showAnswersToggleEl.checked = showAnswers;
+    showJudgeButtonsToggleEl.checked = showJudgeButtons;
 
     for (const s of items) {
       const selectable = !!s.participantId;
@@ -166,15 +207,16 @@
       }
 
       const canJudge = !!s.finalImage;
-      const controls =
-        "<div class='row'>" +
-        "<button data-action='grade-o' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">O</button>" +
-        "<button data-action='grade-x' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">X</button>" +
-        "<button data-action='resubmit' data-slot='" + s.slotNumber + "'" + (selectable ? "" : " disabled") + ">再提出許可</button>" +
-        "</div>";
+      const controls = showJudgeButtons
+        ? "<div class='row'>" +
+          "<button data-action='grade-o' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">O</button>" +
+          "<button data-action='grade-x' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">X</button>" +
+          "<button data-action='resubmit' data-slot='" + s.slotNumber + "'" + (selectable ? "" : " disabled") + ">再提出許可</button>" +
+          "</div>"
+        : "";
 
       div.innerHTML =
-        "<div><strong>Slot " + s.slotNumber + "</strong></div>" +
+        "<div><strong>Slot " + s.slotNumber + "</strong>" + (selectedJudgeSlot === s.slotNumber ? " <span class='meta'>(採点対象)</span>" : "") + "</div>" +
         "<div class='meta'>状態: " + s.state + " / 接続: " + s.connected + "</div>" +
         "<div class='meta'>参加者: " + (s.participantName || s.participantId || "-") + "</div>" +
         finalTag +
@@ -186,7 +228,9 @@
 
       div.addEventListener("click", () => {
         if (!selectable) return;
+        selectedJudgeSlot = s.slotNumber;
         sendControlAction({ type: "live:set", slotNumber: s.slotNumber });
+        render();
       });
 
       const actionButtons = div.querySelectorAll("button[data-action]");
@@ -488,12 +532,48 @@
   nextBtn.addEventListener("click", () => sendControlAction({ type: "control:next" }));
   endBtn.addEventListener("click", () => sendControlAction({ type: "control:end" }));
   summaryBtn.addEventListener("click", togglePresenterMode);
+  showNextQuestionToggleEl.addEventListener("change", () => {
+    showNextQuestion = !!showNextQuestionToggleEl.checked;
+    render();
+  });
+  showAnswersToggleEl.addEventListener("change", () => {
+    showAnswers = !!showAnswersToggleEl.checked;
+    render();
+  });
+  showJudgeButtonsToggleEl.addEventListener("change", () => {
+    showJudgeButtons = !!showJudgeButtonsToggleEl.checked;
+    render();
+  });
   deleteBtn.addEventListener("click", () => { void deleteRoom(); });
   applyQuestionsBtn.addEventListener("click", () => { void applyQuestions(); });
   window.addEventListener("keydown", (ev) => {
+    if (isTypingTarget(ev.target)) return;
     if (ev.key.toLowerCase() === "p" && ev.shiftKey) {
       ev.preventDefault();
       togglePresenterMode();
+      return;
+    }
+    if (/^[1-8]$/.test(ev.key)) {
+      const ok = selectJudgeSlot(Number(ev.key));
+      if (ok) {
+        log("採点対象を slot " + ev.key + " に変更");
+      }
+      return;
+    }
+    const key = ev.key.toLowerCase();
+    if (key === "o") {
+      ev.preventDefault();
+      runJudgeShortcut("grade-o");
+      return;
+    }
+    if (key === "x") {
+      ev.preventDefault();
+      runJudgeShortcut("grade-x");
+      return;
+    }
+    if (key === "r") {
+      ev.preventDefault();
+      runJudgeShortcut("resubmit");
     }
   });
 

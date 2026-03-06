@@ -121,9 +121,12 @@ export function renderHostHtml(roomId: string): string {
     .pill.warn { background:#fee2e2; color:#7f1d1d; }
     #questionNow { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; }
     #questionNow h2 { margin:0 0 8px; font-size:16px; }
+    #viewOptions { margin-top:8px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; font-size:12px; color:#334155; }
+    #viewOptions label { display:flex; gap:6px; align-items:center; font-size:12px; color:#334155; }
     .qline { font-size:14px; color:#1f2937; }
     .qline + .qline { margin-top:4px; }
     .qlabel { color:#64748b; margin-right:6px; }
+    #judgeHint { margin-top:8px; font-size:12px; color:#475569; }
     #projectorLink { color:#0f766e; text-decoration:none; word-break:break-all; }
     #projectorLink:hover { text-decoration:underline; }
     body.presenter header .control { display:none; }
@@ -155,8 +158,14 @@ export function renderHostHtml(roomId: string): string {
     <section id="questionNow">
       <h2>問題状況</h2>
       <div class="qline"><span class="qlabel">現在:</span><span id="currentQuestionLabel">-</span></div>
-      <div class="qline"><span class="qlabel">次:</span><span id="nextQuestionLabel">-</span></div>
+      <div class="qline" id="nextQuestionRow"><span class="qlabel">次:</span><span id="nextQuestionLabel">-</span></div>
       <div class="qline"><span class="qlabel">投影:</span><a id="projectorLink" target="_blank" rel="noreferrer">-</a></div>
+      <div id="viewOptions">
+        <label><input id="showNextQuestionToggle" type="checkbox" /> 次の問題文を表示</label>
+        <label><input id="showAnswersToggle" type="checkbox" /> 生徒の解答を表示</label>
+        <label><input id="showJudgeButtonsToggle" type="checkbox" /> 採点ボタンを表示</label>
+      </div>
+      <div id="judgeHint">採点ショートカット: 1-8で対象slot選択 / O=まる / X=ばつ / R=再提出</div>
     </section>
     <div id="questionEditor">
       <div class="row">
