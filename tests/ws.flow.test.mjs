@@ -75,7 +75,7 @@ test("ws flow: preview -> submit -> grade -> resubmit -> delete", async () => {
   const createRes = await fetch(`${BASE}/api/rooms`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ capacity: 4 }),
+    body: JSON.stringify({ capacity: 4, questions: ["第1問"] }),
   });
   assert.equal(createRes.status, 201);
   const created = await createRes.json();
@@ -136,6 +136,14 @@ test("ws flow: preview -> submit -> grade -> resubmit -> delete", async () => {
   const graded = await player.waitFor((m) => m.type === "answer:grade");
   assert.equal(graded.grade, "O");
 
+  const summaryRes = await fetch(`${BASE}/api/rooms/${created.roomId}/public-summary`);
+  assert.equal(summaryRes.status, 200);
+  const summary = await summaryRes.json();
+  assert.equal(summary.status, "OPEN");
+  assert.equal(summary.totals.submitted, 1);
+  assert.equal(summary.totals.graded, 1);
+  assert.equal(summary.totals.correct, 1);
+
   host.ws.send(
     JSON.stringify({
       type: "resubmit:allow",
@@ -144,6 +152,13 @@ test("ws flow: preview -> submit -> grade -> resubmit -> delete", async () => {
   );
   const resubmitAllowed = await player.waitFor((m) => m.type === "answer:resubmit_allowed");
   assert.equal(resubmitAllowed.allowed, true);
+
+  host.ws.send(
+    JSON.stringify({
+      type: "control:next",
+    }),
+  );
+  await host.waitFor((m) => m.type === "room:status" && m.status === "CLOSED");
 
   const delRes = await fetch(`${BASE}/api/rooms/${created.roomId}`, {
     method: "DELETE",

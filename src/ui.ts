@@ -124,9 +124,11 @@ export function renderHostHtml(roomId: string): string {
     .qline { font-size:14px; color:#1f2937; }
     .qline + .qline { margin-top:4px; }
     .qlabel { color:#64748b; margin-right:6px; }
-    body.summary header .control { display:none; }
-    body.summary #log { display:none; }
-    body.summary #questionEditor { display:none; }
+    body.presenter header .control { display:none; }
+    body.presenter #log { display:none; }
+    body.presenter #questionEditor { display:none; }
+    body.presenter #slots { pointer-events:none; }
+    body.presenter #slots button[data-action] { display:none; }
   </style>
 </head>
 <body>
@@ -141,7 +143,7 @@ export function renderHostHtml(roomId: string): string {
       <button class="control secondary" id="nextBtn">次の問題</button>
       <button class="control secondary" id="endBtn">終了</button>
       <button class="control secondary" id="clearLiveBtn">LIVE解除</button>
-      <button id="summaryBtn" class="secondary">集計表示</button>
+      <button id="summaryBtn" class="secondary" title="Shift+P で切替">管理UIを隠す</button>
       <button class="control danger" id="deleteBtn">ルーム削除</button>
       <span class="pill warn" id="status">未接続</span>
       <span class="pill" id="roomStatus">状態=CREATED / 問題=1</span>
@@ -347,6 +349,10 @@ export function renderSummaryHtml(roomId: string): string {
     #board { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; }
     .tile { border:1px solid var(--line); border-radius:10px; padding:8px; background:#f8fafc; }
     .tileHead { display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:6px; }
+    .tileName { font-size:12px; color:var(--muted); margin:0 0 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .gradeBadge { border-radius:999px; padding:2px 8px; font-size:12px; font-weight:700; background:#e2e8f0; color:#334155; }
+    .gradeBadge.ok { background:#dcfce7; color:#166534; }
+    .gradeBadge.ng { background:#fee2e2; color:#991b1b; }
     .tileImg { width:100%; aspect-ratio:4/3; object-fit:contain; background:#fff; border:1px solid var(--line); border-radius:8px; }
     .empty { width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; background:#fff; border:1px dashed var(--line); border-radius:8px; color:var(--muted); }
   </style>

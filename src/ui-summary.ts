@@ -48,8 +48,14 @@
         const image = typeof s.previewImage === "string" && s.previewImage
           ? "<img class='tileImg' src='" + s.previewImage + "' alt='slot " + s.slotNumber + " answer' />"
           : "<div class='empty'>未入力</div>";
+        const name = typeof s.participantName === "string" && s.participantName.trim()
+          ? s.participantName.trim()
+          : "未参加";
+        const gradeClass = s.grade === "O" ? "ok" : (s.grade === "X" ? "ng" : "");
+        const gradeText = s.grade === "O" ? "O" : (s.grade === "X" ? "X" : "-");
         return "<article class='tile'>" +
-          "<div class='tileHead'><strong>Slot " + s.slotNumber + "</strong><span>" + s.state + "</span></div>" +
+          "<div class='tileHead'><strong>Slot " + s.slotNumber + "</strong><span class='gradeBadge " + gradeClass + "'>採点: " + gradeText + "</span></div>" +
+          "<div class='tileName'>" + name + " / " + s.state + "</div>" +
           image +
           "</article>";
       })

@@ -117,6 +117,17 @@
     }
   }
 
+  function updatePresenterToggleLabel() {
+    summaryBtn.textContent = document.body.classList.contains("presenter")
+      ? "管理UIを表示"
+      : "管理UIを隠す";
+  }
+
+  function togglePresenterMode() {
+    document.body.classList.toggle("presenter");
+    updatePresenterToggleLabel();
+  }
+
   function render() {
     const now = Date.now();
     const items = Object.values(model.slots).sort((a, b) => a.slotNumber - b.slotNumber);
@@ -472,11 +483,18 @@
   });
   nextBtn.addEventListener("click", () => sendControlAction({ type: "control:next" }));
   endBtn.addEventListener("click", () => sendControlAction({ type: "control:end" }));
-  summaryBtn.addEventListener("click", () => document.body.classList.toggle("summary"));
+  summaryBtn.addEventListener("click", togglePresenterMode);
   deleteBtn.addEventListener("click", () => { void deleteRoom(); });
   applyQuestionsBtn.addEventListener("click", () => { void applyQuestions(); });
+  window.addEventListener("keydown", (ev) => {
+    if (ev.key.toLowerCase() === "p" && ev.shiftKey) {
+      ev.preventDefault();
+      togglePresenterMode();
+    }
+  });
 
   render();
+  updatePresenterToggleLabel();
   if (hostKeyEl.value.trim()) {
     connect();
   }
