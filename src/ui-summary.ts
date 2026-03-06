@@ -90,7 +90,11 @@
     }
 
     if (nextFromSummaryBtnEl) {
-      nextFromSummaryBtnEl.disabled = data.status === "CREATED" || data.status === "CLOSED" || !isHostConnected();
+      if (data.status === "CLOSED") {
+        nextFromSummaryBtnEl.disabled = false;
+      } else {
+        nextFromSummaryBtnEl.disabled = data.status === "CREATED" || !isHostConnected();
+      }
     }
 
     const totals = data && typeof data.totals === "object" && data.totals ? data.totals : {};
