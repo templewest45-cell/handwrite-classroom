@@ -6,8 +6,7 @@
   const connectBtn = document.getElementById("connectBtn");
   const disconnectBtn = document.getElementById("disconnectBtn");
   const openBtn = document.getElementById("openBtn");
-  const lockBtn = document.getElementById("lockBtn");
-  const nextBtn = document.getElementById("nextBtn");
+  const showResultBtn = document.getElementById("showResultBtn");
   const endBtn = document.getElementById("endBtn");
   const clearLiveBtn = document.getElementById("clearLiveBtn");
   const summaryBtn = document.getElementById("summaryBtn");
@@ -129,9 +128,7 @@
     deleteBtn.disabled = roomDeleted;
     clearLiveBtn.disabled = !connected || model.liveSlot === null;
     openBtn.disabled = roomDeleted || model.status !== "CREATED" || !hostKeyPresent;
-    lockBtn.disabled = !connected || (model.status !== "OPEN" && model.status !== "LOCKED");
-    lockBtn.textContent = model.status === "LOCKED" ? "ロック解除" : "ロック";
-    nextBtn.disabled = !connected || model.status === "CLOSED";
+    showResultBtn.disabled = roomDeleted || !hostKeyPresent;
     endBtn.disabled = !connected || model.status === "CLOSED";
   }
 
@@ -533,14 +530,9 @@
   });
   clearLiveBtn.addEventListener("click", () => sendControlAction({ type: "live:set", slotNumber: null }));
   openBtn.addEventListener("click", () => sendControlAction({ type: "control:open" }));
-  lockBtn.addEventListener("click", () => {
-    if (model.status === "LOCKED") {
-      sendControlAction({ type: "control:open" });
-      return;
-    }
-    sendControlAction({ type: "control:lock" });
+  showResultBtn.addEventListener("click", () => {
+    location.href = summaryUrl;
   });
-  nextBtn.addEventListener("click", () => sendControlAction({ type: "control:next" }));
   endBtn.addEventListener("click", () => sendControlAction({ type: "control:end" }));
   summaryBtn.addEventListener("click", togglePresenterMode);
   if (showNextQuestionToggleEl) {

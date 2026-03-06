@@ -151,8 +151,7 @@ export function renderHostHtml(roomId: string): string {
       <button class="control" id="connectBtn">接続</button>
       <button class="control secondary" id="disconnectBtn">切断</button>
       <button class="control" id="openBtn">開始</button>
-      <button class="control secondary" id="lockBtn">ロック</button>
-      <button class="control secondary" id="nextBtn">次の問題</button>
+      <button class="control secondary" id="showResultBtn">結果を表示</button>
       <button class="control secondary" id="endBtn">終了</button>
       <button class="control secondary" id="clearLiveBtn">LIVE解除</button>
       <button id="summaryBtn" class="secondary" title="Shift+P で切替">管理UIを隠す</button>
