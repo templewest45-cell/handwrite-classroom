@@ -41,6 +41,7 @@
   let reconnectTimer = null;
   let reconnectAttempts = 0;
   let everConnected = false;
+  let pendingControlMessage = null;
   let selectedJudgeSlot = null;
   let showNextQuestion = false;
   let showAnswers = false;
@@ -68,6 +69,10 @@
 
   function isConnected() {
     return !!ws && ws.readyState === 1;
+  }
+
+  function isSocketActive() {
+    return !!ws && (ws.readyState === 0 || ws.readyState === 1);
   }
 
   function log(msg) {
@@ -118,12 +123,13 @@
 
   function setControlState() {
     const connected = isConnected();
+    const hostKeyPresent = !!hostKeyEl.value.trim();
     connectBtn.disabled = connected;
     disconnectBtn.disabled = !connected;
     hostKeyEl.disabled = connected || roomDeleted;
     deleteBtn.disabled = roomDeleted;
     clearLiveBtn.disabled = !connected || model.liveSlot === null;
-    openBtn.disabled = !connected || model.status !== "CREATED";
+    openBtn.disabled = roomDeleted || model.status !== "CREATED" || !hostKeyPresent;
     lockBtn.disabled = !connected || (model.status !== "OPEN" && model.status !== "LOCKED");
     lockBtn.textContent = model.status === "LOCKED" ? "ロック解除" : "ロック";
     nextBtn.disabled = !connected || model.status === "CLOSED";
@@ -133,8 +139,13 @@
 
   function sendControlAction(msg) {
     const sent = sendWs(msg);
-    if (!sent) {
-      alert("先に接続してください。");
+    if (sent) return;
+    if (roomDeleted) return;
+    pendingControlMessage = msg;
+    connect();
+    if (!isSocketActive()) {
+      alert("接続できませんでした。hostKey を確認してください。");
+      pendingControlMessage = null;
     }
   }
 
@@ -289,7 +300,7 @@
 
   function connect() {
     if (roomDeleted) return;
-    if (isConnected()) return;
+    if (isSocketActive()) return;
     manualDisconnect = false;
     const hostKey = hostKeyEl.value.trim();
     if (!hostKey) {
@@ -314,6 +325,10 @@
       setControlState();
       setStatusPill();
       log("WS接続完了");
+      if (pendingControlMessage && sendWs(pendingControlMessage)) {
+        log("保留操作を実行: " + pendingControlMessage.type);
+        pendingControlMessage = null;
+      }
     };
 
     ws.onclose = (ev) => {
@@ -519,6 +534,7 @@
   connectBtn.addEventListener("click", connect);
   disconnectBtn.addEventListener("click", () => {
     manualDisconnect = true;
+    pendingControlMessage = null;
     if (reconnectTimer) {
       clearTimeout(reconnectTimer);
       reconnectTimer = null;
