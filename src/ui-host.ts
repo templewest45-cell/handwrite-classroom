@@ -30,8 +30,10 @@
 
   hostKeyEl.value = qs.get("hostKey") || "";
   const summaryUrl = location.origin + "/summary/" + roomId;
-  projectorLinkEl.href = summaryUrl;
-  projectorLinkEl.textContent = summaryUrl;
+  if (projectorLinkEl) {
+    projectorLinkEl.href = summaryUrl;
+    projectorLinkEl.textContent = summaryUrl;
+  }
 
   let ws = null;
   let roomDeleted = false;
@@ -172,11 +174,11 @@
     slotsEl.innerHTML = "";
     slotsEl.style.display = showAnswers ? "" : "none";
     realtimeBarEl.style.display = showAnswers ? "" : "none";
-    nextQuestionRowEl.style.display = showNextQuestion ? "" : "none";
-    judgeHintEl.style.display = showJudgeButtons ? "none" : "";
-    showNextQuestionToggleEl.checked = showNextQuestion;
-    showAnswersToggleEl.checked = showAnswers;
-    showJudgeButtonsToggleEl.checked = showJudgeButtons;
+    if (nextQuestionRowEl) nextQuestionRowEl.style.display = showNextQuestion ? "" : "none";
+    if (judgeHintEl) judgeHintEl.style.display = showJudgeButtons ? "none" : "";
+    if (showNextQuestionToggleEl) showNextQuestionToggleEl.checked = showNextQuestion;
+    if (showAnswersToggleEl) showAnswersToggleEl.checked = showAnswers;
+    if (showJudgeButtonsToggleEl) showJudgeButtonsToggleEl.checked = showJudgeButtons;
 
     for (const s of items) {
       const selectable = !!s.participantId;
@@ -464,6 +466,9 @@
     statusEl.textContent = "削除済み";
     setControlState();
     setStatusPill();
+    setTimeout(() => {
+      location.href = "/";
+    }, 400);
   }
 
   async function applyQuestions() {
@@ -532,18 +537,24 @@
   nextBtn.addEventListener("click", () => sendControlAction({ type: "control:next" }));
   endBtn.addEventListener("click", () => sendControlAction({ type: "control:end" }));
   summaryBtn.addEventListener("click", togglePresenterMode);
-  showNextQuestionToggleEl.addEventListener("change", () => {
-    showNextQuestion = !!showNextQuestionToggleEl.checked;
-    render();
-  });
-  showAnswersToggleEl.addEventListener("change", () => {
-    showAnswers = !!showAnswersToggleEl.checked;
-    render();
-  });
-  showJudgeButtonsToggleEl.addEventListener("change", () => {
-    showJudgeButtons = !!showJudgeButtonsToggleEl.checked;
-    render();
-  });
+  if (showNextQuestionToggleEl) {
+    showNextQuestionToggleEl.addEventListener("change", () => {
+      showNextQuestion = !!showNextQuestionToggleEl.checked;
+      render();
+    });
+  }
+  if (showAnswersToggleEl) {
+    showAnswersToggleEl.addEventListener("change", () => {
+      showAnswers = !!showAnswersToggleEl.checked;
+      render();
+    });
+  }
+  if (showJudgeButtonsToggleEl) {
+    showJudgeButtonsToggleEl.addEventListener("change", () => {
+      showJudgeButtons = !!showJudgeButtonsToggleEl.checked;
+      render();
+    });
+  }
   deleteBtn.addEventListener("click", () => { void deleteRoom(); });
   applyQuestionsBtn.addEventListener("click", () => { void applyQuestions(); });
   window.addEventListener("keydown", (ev) => {
