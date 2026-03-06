@@ -394,7 +394,7 @@ export function renderSummaryHtml(roomId: string): string {
 </head>
 <body>
   <header>
-    <h1>公開解答ボード</h1>
+    <h1 id="pageTitle">公開解答ボード</h1>
     <div class="muted">ルーム: ${roomId}</div>
     <div class="row">
       <span class="pill" id="statusPill">状態: -</span>
@@ -426,7 +426,7 @@ export function renderSummaryHtml(roomId: string): string {
         </div>
       </div>
     </section>
-    <section class="card">
+    <section class="card" id="boardCard">
       <h2>解答一覧</h2>
       <div id="board">
       </div>

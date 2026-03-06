@@ -4,6 +4,7 @@
   const qs = new URLSearchParams(location.search);
   const hostKey = (qs.get("hostKey") || "").trim();
   const hostUrl = location.origin + "/host/" + roomId + (hostKey ? ("?hostKey=" + encodeURIComponent(hostKey)) : "");
+  const pageTitleEl = document.getElementById("pageTitle");
   const statusPillEl = document.getElementById("statusPill");
   const questionPillEl = document.getElementById("questionPill");
   const updatedAtEl = document.getElementById("updatedAt");
@@ -14,6 +15,7 @@
   const accuracyRateEl = document.getElementById("accuracyRate");
   const correctCountEl = document.getElementById("correctCount");
   const submittedCountEl = document.getElementById("submittedCount");
+  const boardCardEl = document.getElementById("boardCard");
   const boardEl = document.getElementById("board");
   const finalStudentsCardEl = document.getElementById("finalStudentsCard");
   const finalStudentsEl = document.getElementById("finalStudents");
@@ -22,6 +24,7 @@
   const finalQuestionsEl = document.getElementById("finalQuestions");
 
   let hostWs = null;
+  let latestStatus = "CREATED";
 
   function setError(message) {
     statusPillEl.textContent = "状態: エラー";
@@ -64,19 +67,26 @@
   }
 
   function render(data) {
+    latestStatus = data.status || latestStatus;
     statusPillEl.textContent = "状態: " + data.status;
     questionPillEl.textContent = "問題: " + (data.questionText || ("第" + data.currentQuestionPos + "問"));
     updatedAtEl.textContent = "更新: " + new Date().toLocaleTimeString();
 
     if (data.status === "OPEN" || data.status === "CREATED") {
+      pageTitleEl.textContent = "公開解答ボード";
       stageBadgeEl.textContent = "解答中";
       stageSubEl.textContent = "各生徒の途中解答を表示しています";
+      boardCardEl.classList.remove("hidden");
     } else if (data.status === "LOCKED") {
+      pageTitleEl.textContent = "公開解答ボード";
       stageBadgeEl.textContent = "解答締切";
       stageSubEl.textContent = "提出済みの解答を表示しています";
+      boardCardEl.classList.remove("hidden");
     } else {
+      pageTitleEl.textContent = "最終結果";
       stageBadgeEl.textContent = "終了";
       stageSubEl.textContent = "最終解答を表示しています";
+      boardCardEl.classList.add("hidden");
     }
 
     if (nextFromSummaryBtnEl) {
@@ -178,6 +188,10 @@
     nextFromSummaryBtnEl.classList.remove("hidden");
     summaryControlStatusEl.classList.remove("hidden");
     nextFromSummaryBtnEl.addEventListener("click", () => {
+      if (latestStatus === "CLOSED") {
+        location.href = "/";
+        return;
+      }
       if (!sendControl({ type: "control:next" })) return;
       updateControlStatus("次の問題へ送信", false);
       setTimeout(() => {
@@ -196,6 +210,9 @@
         return;
       }
       render(data);
+      if (nextFromSummaryBtnEl) {
+        nextFromSummaryBtnEl.textContent = data.status === "CLOSED" ? "終了" : "次の問題へ";
+      }
     } catch {
       setError("通信失敗");
     }
