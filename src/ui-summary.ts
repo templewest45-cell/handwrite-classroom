@@ -125,14 +125,7 @@
     const questions = Array.isArray(data.questions) ? data.questions : [];
     if (data.status !== "CLOSED") {
       finalStudentsCardEl.classList.add("hidden");
-      if (questions.length > 0) {
-        const latest = questions[questions.length - 1];
-        finalQuestionsCardEl.classList.remove("hidden");
-        finalQuestionsTitleEl.textContent = "前問の結果";
-        finalQuestionsEl.innerHTML = renderQuestionCards([latest]);
-      } else {
-        finalQuestionsCardEl.classList.add("hidden");
-      }
+      finalQuestionsCardEl.classList.add("hidden");
       return;
     }
 
