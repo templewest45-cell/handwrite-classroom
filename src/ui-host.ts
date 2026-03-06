@@ -20,10 +20,7 @@
   const projectorLinkEl = document.getElementById("projectorLink");
   const showNextQuestionToggleEl = document.getElementById("showNextQuestionToggle");
   const showAnswersToggleEl = document.getElementById("showAnswersToggle");
-  const showJudgeButtonsToggleEl = document.getElementById("showJudgeButtonsToggle");
-  const judgeHintEl = document.getElementById("judgeHint");
-  const questionInputEl = document.getElementById("questionInput");
-  const applyQuestionsBtn = document.getElementById("applyQuestionsBtn");
+  const judgeListEl = document.getElementById("judgeList");
   const realtimeBarEl = document.getElementById("realtimeBar");
   const slotsEl = document.getElementById("slots");
   const logEl = document.getElementById("log");
@@ -45,7 +42,6 @@
   let selectedJudgeSlot = null;
   let showNextQuestion = false;
   let showAnswers = false;
-  let showJudgeButtons = false;
   let model = {
     status: "CREATED",
     currentQuestionPos: 1,
@@ -134,7 +130,6 @@
     lockBtn.textContent = model.status === "LOCKED" ? "ロック解除" : "ロック";
     nextBtn.disabled = !connected || model.status === "CLOSED";
     endBtn.disabled = !connected || model.status === "CLOSED";
-    applyQuestionsBtn.disabled = !connected || roomDeleted;
   }
 
   function sendControlAction(msg) {
@@ -183,13 +178,14 @@
     const now = Date.now();
     const items = Object.values(model.slots).sort((a, b) => a.slotNumber - b.slotNumber);
     slotsEl.innerHTML = "";
+    if (judgeListEl) {
+      judgeListEl.innerHTML = "";
+    }
     slotsEl.style.display = showAnswers ? "" : "none";
     realtimeBarEl.style.display = showAnswers ? "" : "none";
     if (nextQuestionRowEl) nextQuestionRowEl.style.display = showNextQuestion ? "" : "none";
-    if (judgeHintEl) judgeHintEl.style.display = showJudgeButtons ? "none" : "";
     if (showNextQuestionToggleEl) showNextQuestionToggleEl.checked = showNextQuestion;
     if (showAnswersToggleEl) showAnswersToggleEl.checked = showAnswers;
-    if (showJudgeButtonsToggleEl) showJudgeButtonsToggleEl.checked = showJudgeButtons;
 
     for (const s of items) {
       const selectable = !!s.participantId;
@@ -219,25 +215,15 @@
         }
       }
 
-      const canJudge = !!s.finalImage;
-      const controls = showJudgeButtons
-        ? "<div class='row'>" +
-          "<button data-action='grade-o' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">O</button>" +
-          "<button data-action='grade-x' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">X</button>" +
-          "<button data-action='resubmit' data-slot='" + s.slotNumber + "'" + (selectable ? "" : " disabled") + ">再提出許可</button>" +
-          "</div>"
-        : "";
-
       div.innerHTML =
-        "<div><strong>Slot " + s.slotNumber + "</strong>" + (selectedJudgeSlot === s.slotNumber ? " <span class='meta'>(採点対象)</span>" : "") + "</div>" +
+        "<div><strong>Slot " + s.slotNumber + "</strong></div>" +
         "<div class='meta'>状態: " + s.state + " / 接続: " + s.connected + "</div>" +
         "<div class='meta'>参加者: " + (s.participantName || s.participantId || "-") + "</div>" +
         finalTag +
         gradeTag +
         previewTag +
         liveTag +
-        img +
-        controls;
+        img;
 
       div.addEventListener("click", () => {
         if (!selectable) return;
@@ -246,21 +232,42 @@
         render();
       });
 
-      const actionButtons = div.querySelectorAll("button[data-action]");
-      for (const btn of actionButtons) {
+      slotsEl.appendChild(div);
+
+      if (!selectable) continue;
+      const canJudge = !!s.finalImage;
+      const judgeRow = document.createElement("div");
+      judgeRow.className = "judgeRow";
+      judgeRow.innerHTML =
+        "<div class='judgeHead'><strong>Slot " + s.slotNumber + " " + (s.participantName || s.participantId || "-") + "</strong>" +
+        "<span>" + (selectedJudgeSlot === s.slotNumber ? "選択中" : "") + "</span></div>" +
+        "<div class='judgeMeta'>状態: " + s.state + " / 評価: " + (s.grade || "-") + "</div>" +
+        "<div class='judgeButtons'>" +
+        "<button data-action='grade-o' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">○</button>" +
+        "<button data-action='grade-x' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">×</button>" +
+        "<button data-action='resubmit' data-slot='" + s.slotNumber + "'>再</button>" +
+        "</div>";
+      judgeRow.addEventListener("click", () => {
+        selectedJudgeSlot = s.slotNumber;
+        render();
+      });
+      const judgeButtons = judgeRow.querySelectorAll("button[data-action]");
+      for (const btn of judgeButtons) {
         btn.addEventListener("click", (ev) => {
           ev.stopPropagation();
-          if (btn.disabled) return;
+          selectedJudgeSlot = s.slotNumber;
           const action = btn.getAttribute("data-action");
-          const slot = Number(btn.getAttribute("data-slot"));
-          if (!Number.isFinite(slot)) return;
-          if (action === "grade-o") return sendControlAction({ type: "grade:set", slotNumber: slot, grade: "O" });
-          if (action === "grade-x") return sendControlAction({ type: "grade:set", slotNumber: slot, grade: "X" });
-          if (action === "resubmit") return sendControlAction({ type: "resubmit:allow", slotNumber: slot });
+          if (action === "grade-o") return runJudgeShortcut("grade-o");
+          if (action === "grade-x") return runJudgeShortcut("grade-x");
+          if (action === "resubmit") return runJudgeShortcut("resubmit");
         });
       }
-
-      slotsEl.appendChild(div);
+      if (judgeListEl) {
+        judgeListEl.appendChild(judgeRow);
+      }
+    }
+    if (judgeListEl && judgeListEl.childElementCount === 0) {
+      judgeListEl.innerHTML = "<div class='judgeMeta'>参加中の生徒はいません</div>";
     }
 
     roomStatusEl.textContent =
@@ -376,9 +383,6 @@
           liveSlot: m.room.liveSlot,
           slots: m.room.slots,
         };
-        if (model.questions.length > 0) {
-          questionInputEl.value = model.questions.join("\\n");
-        }
       } else if (m.type === "slot:status") {
         const s = model.slots[m.slotNumber];
         if (s) {
@@ -432,7 +436,6 @@
         model.slots = {};
         model.questions = [];
         model.currentQuestionText = "-";
-        questionInputEl.value = "";
         if (ws) ws.close();
       } else if (m.type === "error") {
         log("エラー: " + m.error);
@@ -476,7 +479,6 @@
     model.slots = {};
     model.questions = [];
     model.currentQuestionText = "-";
-    questionInputEl.value = "";
     if (ws) ws.close();
     statusEl.textContent = "削除済み";
     setControlState();
@@ -484,51 +486,6 @@
     setTimeout(() => {
       location.href = "/";
     }, 400);
-  }
-
-  async function applyQuestions() {
-    const hostKey = hostKeyEl.value.trim() || qs.get("hostKey") || "";
-    if (!hostKey) {
-      alert("hostKey がURLにありません。ロビーから開き直してください。");
-      return;
-    }
-
-    const questions = questionInputEl.value
-      .split(/\\r?\\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0)
-      .slice(0, 200);
-
-    if (questions.length === 0) {
-      alert("問題文を1行以上入力してください");
-      return;
-    }
-
-    const res = await fetch("/api/rooms/" + roomId + "/questions?hostKey=" + encodeURIComponent(hostKey), {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ questions }),
-    });
-
-    let data = {};
-    try {
-      data = await res.json();
-    } catch {}
-
-    if (!res.ok) {
-      const err = data && typeof data.error === "string" ? data.error : "unknown";
-      log("問題反映失敗: " + err);
-      alert("問題反映失敗: " + err);
-      return;
-    }
-
-    model.questions = questions;
-    model.currentQuestionPos = typeof data.currentQuestionPos === "number" ? data.currentQuestionPos : 1;
-    if (typeof data.questionText === "string" && data.questionText) {
-      model.currentQuestionText = data.questionText;
-    }
-    log("問題を反映: " + questions.length + "件");
-    render();
   }
 
   connectBtn.addEventListener("click", connect);
@@ -565,14 +522,7 @@
       render();
     });
   }
-  if (showJudgeButtonsToggleEl) {
-    showJudgeButtonsToggleEl.addEventListener("change", () => {
-      showJudgeButtons = !!showJudgeButtonsToggleEl.checked;
-      render();
-    });
-  }
   deleteBtn.addEventListener("click", () => { void deleteRoom(); });
-  applyQuestionsBtn.addEventListener("click", () => { void applyQuestions(); });
   window.addEventListener("keydown", (ev) => {
     if (isTypingTarget(ev.target)) return;
     if (ev.key.toLowerCase() === "p" && ev.shiftKey) {

@@ -99,15 +99,21 @@ export function renderHostHtml(roomId: string): string {
     header { background:#fff; border-bottom:1px solid var(--line); padding:12px; position:sticky; top:0; }
     main { padding:12px; display:grid; gap:12px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    input, button, textarea { padding:8px 10px; border:1px solid var(--line); border-radius:8px; }
+    input, button { padding:8px 10px; border:1px solid var(--line); border-radius:8px; }
     button { background:var(--accent); color:#fff; border:none; cursor:pointer; }
     button.secondary { background:#475569; }
     button.danger { background:#b91c1c; }
     button:disabled { opacity:0.45; cursor:not-allowed; }
-    #questionEditor { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px; }
-    #questionInput { width:100%; min-height:96px; resize:vertical; font:inherit; }
     #realtimeBar { background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px; font-size:12px; color:#334155; }
     #slots { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+    #judgePanel { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; }
+    #judgePanel h2 { margin:0 0 8px; font-size:16px; }
+    #judgeList { display:grid; gap:8px; }
+    .judgeRow { border:1px solid var(--line); border-radius:8px; padding:8px; background:#f8fafc; display:grid; gap:6px; }
+    .judgeHead { display:flex; justify-content:space-between; align-items:center; font-size:13px; }
+    .judgeMeta { font-size:12px; color:#475569; }
+    .judgeButtons { display:flex; gap:6px; flex-wrap:wrap; }
+    .judgeButtons button { min-width:48px; }
     .slot { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px; cursor:pointer; }
     .slot.disabled { opacity:0.65; cursor:default; }
     .slot.live { outline:2px solid var(--accent); }
@@ -126,12 +132,11 @@ export function renderHostHtml(roomId: string): string {
     .qline { font-size:14px; color:#1f2937; }
     .qline + .qline { margin-top:4px; }
     .qlabel { color:#64748b; margin-right:6px; }
-    #judgeHint { margin-top:8px; font-size:12px; color:#475569; }
     #projectorLink { color:#0f766e; text-decoration:none; word-break:break-all; }
     #projectorLink:hover { text-decoration:underline; }
     body.presenter header .control { display:none; }
     body.presenter #log { display:none; }
-    body.presenter #questionEditor { display:none; }
+    body.presenter #judgePanel { display:none; }
     body.presenter #realtimeBar { display:none; }
     body.presenter #slots { display:none; }
   </style>
@@ -163,17 +168,12 @@ export function renderHostHtml(roomId: string): string {
       <div id="viewOptions">
         <label><input id="showNextQuestionToggle" type="checkbox" /> 次の問題文を表示</label>
         <label><input id="showAnswersToggle" type="checkbox" /> 生徒の解答を表示</label>
-        <label><input id="showJudgeButtonsToggle" type="checkbox" /> 採点ボタンを表示</label>
       </div>
-      <div id="judgeHint">採点ショートカット: 1-8で対象slot選択 / O=まる / X=ばつ / R=再提出</div>
     </section>
-    <div id="questionEditor">
-      <div class="row">
-        <strong>問題文（1行1問）</strong>
-        <button class="secondary control" id="applyQuestionsBtn">問題を反映</button>
-      </div>
-      <textarea id="questionInput" placeholder="例）&#10;3+5 はいくつ？&#10;次の漢字を書きなさい: 海"></textarea>
-    </div>
+    <section id="judgePanel">
+      <h2>参加生徒と採点</h2>
+      <div id="judgeList"></div>
+    </section>
     <div id="realtimeBar">LIVE: なし / ストローク: 0 / 配信: 待機</div>
     <div id="slots"></div>
     <div id="log"></div>
