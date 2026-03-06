@@ -43,6 +43,21 @@ export interface RoomState {
   currentQuestionPos: number;
   liveSlot: number | null;
   slots: Record<number, SlotState>;
+  questionResults: QuestionResult[];
+}
+
+export interface QuestionParticipantResult {
+  slotNumber: number;
+  participantId: string | null;
+  participantName: string | null;
+  grade: "O" | "X" | null;
+  finalImage: string | null;
+}
+
+export interface QuestionResult {
+  questionPos: number;
+  questionText: string;
+  results: QuestionParticipantResult[];
 }
 
 export interface AuditEvent {

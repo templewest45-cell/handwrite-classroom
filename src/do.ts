@@ -7,6 +7,7 @@
   JoinRoomRequest,
   jsonResponse,
   parseOptionalJson,
+  QuestionResult,
   randomId,
   ROOM_TTL_MS,
   RoomState,
@@ -98,6 +99,35 @@ export class RoomDurableObject {
     return fromList || `第${room.currentQuestionPos}問`;
   }
 
+  private buildQuestionResult(room: RoomState): QuestionResult {
+    const questionPos = Math.max(1, Number(room.currentQuestionPos) || 1);
+    const questionText = this.getCurrentQuestionText(room);
+    const results = Object.values(room.slots)
+      .filter((slot) => !!slot.participantId)
+      .sort((a, b) => a.slotNumber - b.slotNumber)
+      .map((slot) => ({
+        slotNumber: slot.slotNumber,
+        participantId: slot.participantId,
+        participantName: slot.participantName,
+        grade: slot.grade,
+        finalImage: slot.finalImage,
+      }));
+    return { questionPos, questionText, results };
+  }
+
+  private upsertQuestionResult(room: RoomState): void {
+    const current = Array.isArray(room.questionResults) ? room.questionResults : [];
+    const next = this.buildQuestionResult(room);
+    const idx = current.findIndex((q) => q.questionPos === next.questionPos);
+    if (idx >= 0) {
+      current[idx] = next;
+    } else {
+      current.push(next);
+      current.sort((a, b) => a.questionPos - b.questionPos);
+    }
+    room.questionResults = current;
+  }
+
   private broadcastRoomStatus(room: RoomState): void {
     const questionText = room.status === "CREATED" ? null : this.getCurrentQuestionText(room);
     const payload = {
@@ -134,6 +164,8 @@ export class RoomDurableObject {
     currentQuestionPos: number;
     questionText: string;
     totals: { joined: number; submitted: number; graded: number; correct: number; incorrect: number };
+    students?: Array<{ participantId: string; participantName: string | null; correct: number; graded: number; accuracy: number }>;
+    questions?: QuestionResult[];
     slots: Array<{
       slotNumber: number;
       participantName: string | null;
@@ -155,12 +187,41 @@ export class RoomDurableObject {
     const graded = list.filter((s) => s.grade === "O" || s.grade === "X").length;
     const correct = list.filter((s) => s.grade === "O").length;
     const incorrect = list.filter((s) => s.grade === "X").length;
+    const history = Array.isArray(room.questionResults) ? room.questionResults : [];
+    const studentsMap = new Map<string, { participantId: string; participantName: string | null; correct: number; graded: number }>();
+    for (const q of history) {
+      for (const r of q.results) {
+        if (!r.participantId) continue;
+        const cur = studentsMap.get(r.participantId) ?? {
+          participantId: r.participantId,
+          participantName: r.participantName,
+          correct: 0,
+          graded: 0,
+        };
+        if (cur.participantName === null && r.participantName) {
+          cur.participantName = r.participantName;
+        }
+        if (r.grade === "O" || r.grade === "X") {
+          cur.graded += 1;
+          if (r.grade === "O") cur.correct += 1;
+        }
+        studentsMap.set(r.participantId, cur);
+      }
+    }
+    const students = Array.from(studentsMap.values())
+      .map((s) => ({
+        ...s,
+        accuracy: s.graded > 0 ? Math.round((s.correct / s.graded) * 100) : 0,
+      }))
+      .sort((a, b) => b.accuracy - a.accuracy || a.participantId.localeCompare(b.participantId));
     return {
       roomId: room.roomId,
       status: room.status,
       currentQuestionPos: room.currentQuestionPos,
       questionText: this.getCurrentQuestionText(room),
       totals: { joined, submitted, graded, correct, incorrect },
+      students,
+      questions: history,
       slots,
     };
   }
@@ -521,6 +582,7 @@ export class RoomDurableObject {
       if (payload.type === "control:next") {
         const questionCount = Array.isArray(room.questions) ? room.questions.length : 0;
         const isLastQuestion = questionCount > 0 && room.currentQuestionPos >= questionCount;
+        this.upsertQuestionResult(room);
         if (isLastQuestion) {
           room.status = "CLOSED";
           room.liveSlot = null;
@@ -572,6 +634,7 @@ export class RoomDurableObject {
 
       room.status = "CLOSED";
       room.liveSlot = null;
+      this.upsertQuestionResult(room);
       await this.ctx.storage.put("room", room);
       await this.appendAudit("control_end", { roomId: room.roomId });
       this.broadcastRoomStatus(room);
@@ -712,6 +775,7 @@ export class RoomDurableObject {
         currentQuestionPos: 1,
         liveSlot: null,
         slots: {},
+        questionResults: [],
       };
 
       for (let i = 1; i <= body.capacity; i++) {
@@ -811,6 +875,7 @@ export class RoomDurableObject {
       room.questions = nextQuestions;
       room.currentQuestionPos = 1;
       room.liveSlot = null;
+      room.questionResults = [];
       for (const slot of Object.values(room.slots)) {
         slot.draftPreview = null;
         slot.finalImage = null;

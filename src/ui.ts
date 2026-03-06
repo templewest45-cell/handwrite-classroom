@@ -110,6 +110,8 @@ export function renderHostHtml(roomId: string): string {
     #judgePanel h2 { margin:0 0 8px; font-size:16px; }
     #judgeList { display:grid; gap:8px; }
     .judgeRow { border:1px solid var(--line); border-radius:8px; padding:8px; background:#f8fafc; display:grid; gap:6px; }
+    .judgeRow.submitted { background:#dbeafe; border-color:#93c5fd; }
+    .judgeRow.correct { background:#fee2e2; border-color:#fca5a5; }
     .judgeHead { display:flex; justify-content:space-between; align-items:center; font-size:13px; }
     .judgeMeta { font-size:12px; color:#475569; }
     .judgeButtons { display:flex; gap:6px; flex-wrap:wrap; }
@@ -373,6 +375,15 @@ export function renderSummaryHtml(roomId: string): string {
     .gradeBadge.ng { background:#fee2e2; color:#991b1b; }
     .tileImg { width:100%; aspect-ratio:4/3; object-fit:contain; background:#fff; border:1px solid var(--line); border-radius:8px; }
     .empty { width:100%; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; background:#fff; border:1px dashed var(--line); border-radius:8px; color:var(--muted); }
+    .studentTable { width:100%; border-collapse:collapse; font-size:13px; }
+    .studentTable th, .studentTable td { border-bottom:1px solid var(--line); padding:8px; text-align:left; }
+    .studentTable th { color:var(--muted); font-weight:600; }
+    .questionHistory { display:grid; gap:10px; }
+    .qhItem { border:1px solid var(--line); border-radius:10px; padding:8px; background:#f8fafc; }
+    .qhTitle { font-size:14px; font-weight:700; margin-bottom:6px; }
+    .qhRows { display:grid; gap:6px; }
+    .qhRow { display:flex; justify-content:space-between; gap:8px; font-size:13px; }
+    .hidden { display:none; }
   </style>
 </head>
 <body>
@@ -411,6 +422,14 @@ export function renderSummaryHtml(roomId: string): string {
       <h2>解答一覧</h2>
       <div id="board">
       </div>
+    </section>
+    <section class="card hidden" id="finalStudentsCard">
+      <h2>生徒ごとの正解率</h2>
+      <div id="finalStudents"></div>
+    </section>
+    <section class="card hidden" id="finalQuestionsCard">
+      <h2>全問題の結果</h2>
+      <div id="finalQuestions" class="questionHistory"></div>
     </section>
   </main>
 <script>${renderSummaryScript(roomId)}</script>

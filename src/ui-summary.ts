@@ -10,6 +10,10 @@
   const correctCountEl = document.getElementById("correctCount");
   const submittedCountEl = document.getElementById("submittedCount");
   const boardEl = document.getElementById("board");
+  const finalStudentsCardEl = document.getElementById("finalStudentsCard");
+  const finalStudentsEl = document.getElementById("finalStudents");
+  const finalQuestionsCardEl = document.getElementById("finalQuestionsCard");
+  const finalQuestionsEl = document.getElementById("finalQuestions");
 
   function setError(message) {
     statusPillEl.textContent = "状態: エラー";
@@ -58,6 +62,50 @@
           "<div class='tileName'>" + name + " / " + s.state + "</div>" +
           image +
           "</article>";
+      })
+      .join("");
+
+    if (data.status !== "CLOSED") {
+      finalStudentsCardEl.classList.add("hidden");
+      finalQuestionsCardEl.classList.add("hidden");
+      return;
+    }
+
+    finalStudentsCardEl.classList.remove("hidden");
+    finalQuestionsCardEl.classList.remove("hidden");
+
+    const students = Array.isArray(data.students) ? data.students : [];
+    if (!students.length) {
+      finalStudentsEl.innerHTML = "<div class='muted'>集計データがありません</div>";
+    } else {
+      const rowsHtml = students
+        .map((s) => {
+          const name = typeof s.participantName === "string" && s.participantName.trim() ? s.participantName.trim() : s.participantId;
+          return "<tr><td>" + name + "</td><td>" + s.correct + " / " + s.graded + "</td><td>" + s.accuracy + "%</td></tr>";
+        })
+        .join("");
+      finalStudentsEl.innerHTML =
+        "<table class='studentTable'><thead><tr><th>生徒</th><th>正解 / 採点</th><th>正解率</th></tr></thead><tbody>" +
+        rowsHtml +
+        "</tbody></table>";
+    }
+
+    const questions = Array.isArray(data.questions) ? data.questions : [];
+    if (!questions.length) {
+      finalQuestionsEl.innerHTML = "<div class='muted'>問題履歴がありません</div>";
+      return;
+    }
+    finalQuestionsEl.innerHTML = questions
+      .map((q) => {
+        const questionRows = Array.isArray(q.results) ? q.results : [];
+        const rowsHtml = questionRows
+          .map((r) => {
+            const name = typeof r.participantName === "string" && r.participantName.trim() ? r.participantName.trim() : (r.participantId || ("参加者" + r.slotNumber));
+            const grade = r.grade || "-";
+            return "<div class='qhRow'><span>" + name + "</span><span>採点: " + grade + "</span></div>";
+          })
+          .join("");
+        return "<div class='qhItem'><div class='qhTitle'>第" + q.questionPos + "問: " + q.questionText + "</div><div class='qhRows'>" + rowsHtml + "</div></div>";
       })
       .join("");
   }

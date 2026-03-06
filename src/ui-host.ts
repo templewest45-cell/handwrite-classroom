@@ -243,6 +243,11 @@
       const canJudge = !!s.finalImage;
       const judgeRow = document.createElement("div");
       judgeRow.className = "judgeRow";
+      if (s.grade === "O") {
+        judgeRow.classList.add("correct");
+      } else if (s.state === "SUBMITTED") {
+        judgeRow.classList.add("submitted");
+      }
       const participantLabel = "参加者" + s.slotNumber;
       const participantName = s.participantName || "-";
       judgeRow.innerHTML =
