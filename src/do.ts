@@ -510,22 +510,10 @@ export class RoomDurableObject {
       }
 
       if (payload.type === "control:lock") {
-        const questionCount = Array.isArray(room.questions) ? room.questions.length : 0;
-        const isLastQuestion = questionCount > 0 && room.currentQuestionPos >= questionCount;
-        room.status = isLastQuestion ? "CLOSED" : "LOCKED";
-        if (isLastQuestion) {
-          room.liveSlot = null;
-        }
+        room.status = "LOCKED";
         await this.ctx.storage.put("room", room);
-        await this.appendAudit(isLastQuestion ? "control_end_on_last_lock" : "control_lock", {
-          roomId: room.roomId,
-          currentQuestionPos: room.currentQuestionPos,
-          questionCount,
-        });
+        await this.appendAudit("control_lock", { roomId: room.roomId });
         this.broadcastRoomStatus(room);
-        if (isLastQuestion) {
-          this.broadcastToHosts({ type: "live:changed", liveSlot: null });
-        }
         this.broadcastToPlayers({ type: "answer:lock", locked: true });
         return;
       }

@@ -39,6 +39,7 @@
   let reconnectTimer = null;
   let reconnectAttempts = 0;
   let everConnected = false;
+  let redirectedToSummary = false;
   let pendingControlMessage = null;
   let selectedJudgeSlot = null;
   let showNextQuestion = false;
@@ -308,6 +309,10 @@
 
     setControlState();
     setStatusPill();
+    if (!roomDeleted && model.status === "CLOSED" && !redirectedToSummary) {
+      redirectedToSummary = true;
+      location.href = summaryUrl;
+    }
   }
 
   function connect() {
