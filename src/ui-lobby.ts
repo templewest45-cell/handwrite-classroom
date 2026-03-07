@@ -8,13 +8,10 @@
   const playerUrlEl = document.getElementById("playerUrl");
   const playerQrEl = document.getElementById("playerQr");
   const hostUrlEl = document.getElementById("hostUrl");
-  const summaryUrlEl = document.getElementById("summaryUrl");
   const statusEl = document.getElementById("status");
   const questionEl = document.getElementById("question");
   const joinedEl = document.getElementById("joinedCount");
   const startBtn = document.getElementById("startBtn");
-  const lockBtn = document.getElementById("lockBtn");
-  const nextBtn = document.getElementById("nextBtn");
 
   let ws = null;
   let model = { status: "CREATED", currentQuestionPos: 1, questionText: "第1問", slots: {} };
@@ -47,9 +44,6 @@
 
     const connected = !!ws && ws.readyState === 1;
     startBtn.disabled = !connected || model.status === "OPEN";
-    lockBtn.disabled = !connected;
-    nextBtn.disabled = !connected;
-    lockBtn.textContent = model.status === "LOCKED" ? "ロック解除" : "ロック";
   }
 
   function connect() {
@@ -105,14 +99,11 @@
 
   const playerUrl = location.origin + "/player/" + roomId;
   const hostUrl = location.origin + "/host/" + roomId + "?hostKey=" + encodeURIComponent(hostKey);
-  const summaryUrl = location.origin + "/summary/" + roomId + "?hostKey=" + encodeURIComponent(hostKey);
 
   playerUrlEl.href = playerUrl;
   playerUrlEl.textContent = playerUrl;
   playerQrEl.src = qrSrc(playerUrl);
   hostUrlEl.href = hostUrl;
-  summaryUrlEl.href = summaryUrl;
-  summaryUrlEl.textContent = summaryUrl;
 
   startBtn.addEventListener("click", () => {
     if (!send({ type: "control:open" })) {
@@ -123,13 +114,6 @@
     setTimeout(() => {
       location.href = hostUrl;
     }, 150);
-  });
-  lockBtn.addEventListener("click", () => {
-    const cmd = model.status === "LOCKED" ? { type: "control:open" } : { type: "control:lock" };
-    if (!send(cmd)) setStatus("未接続です", true);
-  });
-  nextBtn.addEventListener("click", () => {
-    if (!send({ type: "control:next" })) setStatus("未接続です", true);
   });
 
   updateView();

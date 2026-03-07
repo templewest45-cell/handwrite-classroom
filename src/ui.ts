@@ -231,17 +231,11 @@ export function renderLobbyHtml(roomId: string): string {
       <h2>授業操作</h2>
       <div class="row">
         <button id="startBtn" class="btn main">解答を開始</button>
-        <button id="lockBtn" class="btn sub">ロック</button>
-        <button id="nextBtn" class="btn sub">次の問題</button>
       </div>
       <div id="status">接続待機</div>
       <div id="question" style="margin-top:10px;">問題: 第1問</div>
       <div class="meta" style="margin-top:8px;">
         詳細管理: <a id="hostUrl" target="_blank" rel="noreferrer">Host画面を開く</a>
-      </div>
-      <div class="publicLink">
-        <div class="meta">投影用 Summary URL</div>
-        <a id="summaryUrl" target="_blank" rel="noreferrer"></a>
       </div>
     </section>
   </main>
