@@ -3,4 +3,5 @@ node_modules/
 
 # secrets
 apitoken.txt
+.tmp-wrangler-*.log
 
