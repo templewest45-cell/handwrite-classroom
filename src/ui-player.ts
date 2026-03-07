@@ -31,6 +31,9 @@
   let roomStatus = "CREATED";
   const waitMessage = "しばらくまってね";
   const classEndedMessage = "このクラスは終了しました。ページを閉じてください。";
+  let endCloseTimer = null;
+  let endCountdownTimer = null;
+  let endRemainSec = 30;
   const resumeKey = "hwc:resume:" + roomId;
   const resumeNameKey = "hwc:resume-name:" + roomId;
   const wsProto = location.protocol === "https:" ? "wss" : "ws";
@@ -77,6 +80,43 @@
     statusEl.textContent = text;
   }
 
+  function stopEndCountdown() {
+    if (endCloseTimer) {
+      clearTimeout(endCloseTimer);
+      endCloseTimer = null;
+    }
+    if (endCountdownTimer) {
+      clearInterval(endCountdownTimer);
+      endCountdownTimer = null;
+    }
+  }
+
+  function updateEndMessage() {
+    const text = classEndedMessage + "（" + endRemainSec + "秒後に自動で閉じます）";
+    renderQuestion(text);
+    setStatus(text);
+  }
+
+  function startEndCountdown() {
+    stopEndCountdown();
+    endRemainSec = 30;
+    updateEndMessage();
+    endCountdownTimer = setInterval(() => {
+      endRemainSec = Math.max(0, endRemainSec - 1);
+      updateEndMessage();
+    }, 1000);
+    endCloseTimer = setTimeout(() => {
+      try {
+        window.close();
+      } catch {}
+      setTimeout(() => {
+        if (!document.hidden) {
+          location.replace("about:blank");
+        }
+      }, 300);
+    }, 30000);
+  }
+
   function setGradeBanner(grade) {
     gradeBannerEl.className = "";
     gradeMarkEl.classList.remove("show");
@@ -112,6 +152,7 @@
   function applyRoomStatus(nextStatus) {
     roomStatus = nextStatus || roomStatus;
     if (roomStatus === "CREATED") {
+      stopEndCountdown();
       locked = true;
       submitted = false;
       renderQuestion("問題: 開始待ち");
@@ -126,10 +167,10 @@
     if (roomStatus === "CLOSED") {
       locked = true;
       submitted = false;
-      renderQuestion(classEndedMessage);
-      setStatus(classEndedMessage);
+      startEndCountdown();
       return;
     }
+    stopEndCountdown();
     locked = false;
     submitted = false;
     setStatus("入力可能");
@@ -248,7 +289,7 @@
       }
       setStatus(roomDeleted || roomStatus === "CLOSED" ? classEndedMessage : "WS切断 (code " + ev.code + ")");
       updateControlState();
-      if (!roomDeleted && participantId) {
+      if (!roomDeleted && roomStatus !== "CLOSED" && participantId) {
         reconnectAttempts += 1;
         const waitMs = Math.min(8000, 1000 + reconnectAttempts * 500);
         setStatus("再接続待機...");
@@ -319,9 +360,8 @@
         locked = true;
         participantId = null;
         clearResumeToken();
-        setStatus(classEndedMessage);
+        startEndCountdown();
         setGradeBanner(null);
-        renderQuestion(classEndedMessage);
         clearCanvas(false);
         if (ws) ws.close();
       } else if (m.type === "participant:removed") {
