@@ -1,12 +1,8 @@
 name = "handwrite-classroom"
-main = "src/index.ts"
 compatibility_date = "2026-03-03"
+pages_build_output_dir = "public"
 
 [durable_objects]
 bindings = [
-  { name = "ROOM_DO", class_name = "RoomDurableObject" }
+  { name = "ROOM_DO", class_name = "RoomDurableObject", script_name = "handwrite-classroom-do" }
 ]
-
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["RoomDurableObject"]

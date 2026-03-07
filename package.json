@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy:do": "wrangler deploy --config wrangler.worker.toml",
+    "deploy:pages": "wrangler pages deploy public --project-name handwrite-classroom --branch main",
+    "deploy": "npm run deploy:do && npm run deploy:pages",
     "check": "tsc --noEmit",
     "test:api": "node --test --test-isolation=none tests/api.smoke.test.mjs",
     "test:ws": "node --test --test-isolation=none tests/ws.flow.test.mjs",

@@ -1,4 +1,4 @@
-name: Deploy Worker
+name: Deploy Pages App
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-worker-production
+  group: deploy-pages-app-production
   cancel-in-progress: true
 
 jobs:
@@ -29,9 +29,18 @@ jobs:
       - name: Type check
         run: npm run check
 
-      - name: Deploy to Cloudflare
+      - name: Deploy Durable Object Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          command: deploy --config wrangler.worker.toml
+          wranglerVersion: "4.69.0"
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name handwrite-classroom --branch main
+          wranglerVersion: "4.69.0"

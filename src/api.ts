@@ -63,7 +63,7 @@ const api = {
       }
 
       if (!isValidCapacity(body.capacity)) {
-        return errorResponse(400, "capacity_must_be_4_6_or_8");
+        return errorResponse(400, "capacity_must_be_2_4_6_or_8");
       }
       if (body.questions !== undefined) {
         if (!Array.isArray(body.questions)) {
