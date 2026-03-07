@@ -80,7 +80,7 @@
   function closeTeacherNotePanel() {
     teacherNoteSlot = null;
     teacherNoteBaseImage = null;
-    if (teacherNotePanelEl) teacherNotePanelEl.style.display = "none";
+    if (teacherNotePanelEl) teacherNotePanelEl.classList.remove("open");
     if (teacherNoteMetaEl) teacherNoteMetaEl.textContent = "対象: -";
     setControlState();
   }
@@ -120,7 +120,7 @@
     if (teacherNoteMetaEl) {
       teacherNoteMetaEl.textContent = "対象: slot " + slotNumber + " / " + (slot.participantName || slot.participantId);
     }
-    if (teacherNotePanelEl) teacherNotePanelEl.style.display = "";
+    if (teacherNotePanelEl) teacherNotePanelEl.classList.add("open");
     setControlState();
   }
 

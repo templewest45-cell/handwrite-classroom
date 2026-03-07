@@ -122,9 +122,17 @@ export function renderHostHtml(roomId: string): string {
     .judgeMeta { font-size:12px; color:#475569; }
     .judgeButtons { display:flex; gap:6px; flex-wrap:wrap; }
     .judgeButtons button { min-width:48px; }
-    #teacherNotePanel { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; display:none; }
+    #teacherNotePanel {
+      position:fixed; inset:0; z-index:1000; display:none;
+      background:rgba(15,23,42,0.85); padding:16px; overflow:auto;
+    }
+    #teacherNotePanel.open { display:block; }
+    #teacherNoteBody { max-width:1080px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; }
     #teacherNotePanel h2 { margin:0 0 8px; font-size:16px; }
-    #teacherNoteCanvas { width:100%; max-width:960px; height:auto; border:1px solid var(--line); border-radius:8px; background:#fff; touch-action:none; display:block; }
+    #teacherNoteCanvas {
+      width:100%; max-width:100%; height:auto;
+      border:1px solid var(--line); border-radius:8px; background:#fff; touch-action:none; display:block;
+    }
     #teacherNoteMeta { font-size:12px; color:#475569; margin-bottom:8px; }
     .slot { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px; cursor:pointer; }
     .slot.disabled { opacity:0.65; cursor:default; }
@@ -186,13 +194,15 @@ export function renderHostHtml(roomId: string): string {
       <div id="judgeList"></div>
     </section>
     <section id="teacherNotePanel">
-      <h2>教師の追記（青）</h2>
-      <div id="teacherNoteMeta">対象: -</div>
-      <canvas id="teacherNoteCanvas" width="960" height="640"></canvas>
-      <div class="row" style="margin-top:8px;">
-        <button id="teacherNoteSaveBtn" class="control">追記を反映</button>
-        <button id="teacherNoteResetBtn" class="control secondary">追記をクリア</button>
-        <button id="teacherNoteCancelBtn" class="control secondary">閉じる</button>
+      <div id="teacherNoteBody">
+        <h2>教師の追記（青）</h2>
+        <div id="teacherNoteMeta">対象: -</div>
+        <canvas id="teacherNoteCanvas" width="960" height="640"></canvas>
+        <div class="row" style="margin-top:8px;">
+          <button id="teacherNoteSaveBtn" class="control">追記を反映</button>
+          <button id="teacherNoteResetBtn" class="control secondary">追記をクリア</button>
+          <button id="teacherNoteCancelBtn" class="control secondary">閉じる</button>
+        </div>
       </div>
     </section>
     <div id="realtimeBar">LIVE: なし / ストローク: 0 / 配信: 待機</div>
