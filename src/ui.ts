@@ -153,10 +153,12 @@ export function renderGuideHtml(): string {
       <ol>
         <li>参加URLまたはQRを配布する</li>
         <li>参加者名一覧を確認する</li>
+      </ol>
+      <img class="shot" src="/guide-assets/lobby-initial.png" alt="参加ロビー 初期" />
+      <ol>
         <li>誤参加は「削除」で外す</li>
         <li>「解答を開始」で教師画面へ進む</li>
       </ol>
-      <img class="shot" src="/guide-assets/lobby-initial.png" alt="参加ロビー 初期" />
       <img class="shot" src="/guide-assets/lobby-participants.png" alt="参加ロビー 参加者表示" />
     </section>
     <section class="card">
@@ -164,14 +166,19 @@ export function renderGuideHtml(): string {
       <ol>
         <li>採点行で ○ / × / 再 を使う</li>
         <li>必要なら「追記」で青ペンコメントを反映する</li>
+        <li>「生徒の解答を表示」をONにすると、提出画像一覧を確認できる</li>
+        <li>公開解答ボードの「次の問題へ」で問題を進める（最終問題は終了遷移）</li>
         <li>授業終了は「終了」または「ルーム削除」</li>
       </ol>
       <img class="shot" src="/guide-assets/host-panel.png" alt="教師画面 採点パネル" />
       <img class="shot" src="/guide-assets/host-annotation.png" alt="教師の追記画面" />
+      <img class="shot" src="/guide-assets/host-answers.png" alt="教師画面 生徒解答一覧" />
+      <img class="shot" src="/guide-assets/summary-next.png" alt="公開解答ボード 次の問題へ" />
     </section>
     <section class="card">
       <h2>4. 生徒画面の表示</h2>
       <ol>
+        <li>名前を入力して「参加」を押すと入室できる</li>
         <li>待機・ロック中: 「しばらくまってね」</li>
         <li>終了時: 終了メッセージと30秒カウントダウン</li>
         <li>30秒後: 自動クローズを試行（不可時は終了画面へ遷移）</li>
