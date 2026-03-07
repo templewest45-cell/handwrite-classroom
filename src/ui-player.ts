@@ -116,9 +116,16 @@
       setStatus("開始待ち");
       return;
     }
-    if (roomStatus === "LOCKED" || roomStatus === "CLOSED") {
+    if (roomStatus === "LOCKED") {
       locked = true;
       setStatus("ロック中");
+      return;
+    }
+    if (roomStatus === "CLOSED") {
+      locked = true;
+      submitted = false;
+      renderQuestion("このクラスは終了しました。ページを閉じてください。");
+      setStatus("このクラスは終了しました。ページを閉じてください。");
       return;
     }
     locked = false;
@@ -310,9 +317,9 @@
         locked = true;
         participantId = null;
         clearResumeToken();
-        setStatus("ルームが削除されました");
+        setStatus("このクラスは終了しました。ページを閉じてください。");
         setGradeBanner(null);
-        updateQuestion(currentQuestionPos, "ルームは削除されました");
+        renderQuestion("このクラスは終了しました。ページを閉じてください。");
         clearCanvas(false);
         if (ws) ws.close();
       } else if (m.type === "participant:removed") {
