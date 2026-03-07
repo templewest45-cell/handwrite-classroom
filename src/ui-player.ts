@@ -30,26 +30,32 @@
   let currentQuestionPos = 1;
   let roomStatus = "CREATED";
   const resumeKey = "hwc:resume:" + roomId;
+  const resumeNameKey = "hwc:resume-name:" + roomId;
   const wsProto = location.protocol === "https:" ? "wss" : "ws";
 
   function playerWsUrl(pid) {
     return wsProto + "://" + location.host + "/api/rooms/" + roomId + "/ws/player?participantId=" + encodeURIComponent(pid);
   }
 
-  function getResumeToken() {
+  function getResumeProfile() {
     try {
       const raw = localStorage.getItem(resumeKey) || "";
+      const savedName = (localStorage.getItem(resumeNameKey) || "").trim() || null;
       const token = raw.trim();
-      return token || null;
+      if (!token) return null;
+      return { token, savedName };
     } catch {
       return null;
     }
   }
 
-  function setResumeToken(token) {
+  function setResumeToken(token, participantName) {
     try {
       if (typeof token === "string" && token.trim()) {
         localStorage.setItem(resumeKey, token.trim());
+        if (typeof participantName === "string" && participantName.trim()) {
+          localStorage.setItem(resumeNameKey, participantName.trim());
+        }
       }
     } catch {}
   }
@@ -57,6 +63,7 @@
   function clearResumeToken() {
     try {
       localStorage.removeItem(resumeKey);
+      localStorage.removeItem(resumeNameKey);
     } catch {}
   }
 
@@ -327,12 +334,22 @@
   async function join() {
     if (roomDeleted) return;
     if (participantId) return;
-    const resumeToken = getResumeToken();
+    const enteredName = nameEl.value.trim();
+    const resume = getResumeProfile();
+    let resumeToken = null;
+    if (resume) {
+      const hasEnteredName = enteredName.length > 0;
+      const sameName = hasEnteredName && resume.savedName && enteredName === resume.savedName;
+      const noNameInput = !hasEnteredName;
+      if (sameName || noNameInput) {
+        resumeToken = resume.token;
+      }
+    }
     const res = await fetch("/api/rooms/" + roomId + "/join", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        participantName: nameEl.value.trim() || null,
+        participantName: enteredName || null,
         resumeToken: resumeToken || undefined,
       }),
     });
@@ -344,7 +361,7 @@
 
     participantId = data.participantId;
     if (typeof data.resumeToken === "string" && data.resumeToken.trim()) {
-      setResumeToken(data.resumeToken);
+      setResumeToken(data.resumeToken, enteredName || null);
     }
     ws = new WebSocket(playerWsUrl(participantId));
     setStatus("WS接続中...");
@@ -419,7 +436,7 @@
   updateStrokeStyle();
   renderQuestion("問題: 開始待ち");
   setGradeBanner(null);
-  if (getResumeToken()) {
+  if (getResumeProfile()) {
     setStatus("前回の席に復帰できます（参加を押す）");
   }
   updateControlState();
