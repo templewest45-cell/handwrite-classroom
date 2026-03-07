@@ -2,7 +2,7 @@ export interface Env {
   ROOM_DO: DurableObjectNamespace;
 }
 
-export type Capacity = 4 | 6 | 8;
+export type Capacity = 2 | 4 | 6 | 8;
 export type RoomStatus = "CREATED" | "OPEN" | "LOCKED" | "CLOSED";
 export type Role = "HOST" | "PLAYER";
 
@@ -139,5 +139,5 @@ export function isWebSocketUpgrade(request: Request): boolean {
 }
 
 export function isValidCapacity(value: unknown): value is Capacity {
-  return value === 4 || value === 6 || value === 8;
+  return value === 2 || value === 4 || value === 6 || value === 8;
 }
