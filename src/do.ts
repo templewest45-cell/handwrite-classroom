@@ -21,6 +21,7 @@ import {
   GradeSetMessage,
   LiveSetMessage,
   parseWsMessage,
+  ParticipantRemoveMessage,
   PreviewUpdateMessage,
   ResubmitAllowMessage,
   StrokeBatchMessage,
@@ -280,6 +281,86 @@ export class RoomDurableObject {
       return null;
     }
     return room.slots[slotNumber] ?? null;
+  }
+
+  private clearSlot(slot: SlotState): void {
+    slot.participantId = null;
+    slot.participantResumeTokenHash = null;
+    slot.participantName = null;
+    slot.connected = false;
+    slot.state = "EMPTY";
+    slot.draftPreview = null;
+    slot.finalImage = null;
+    slot.grade = null;
+  }
+
+  private async removeParticipantBySlot(room: RoomState, slot: SlotState): Promise<boolean> {
+    if (!slot.participantId) {
+      return false;
+    }
+    const participantId = slot.participantId;
+    const participantName = slot.participantName;
+    const liveChanged = room.liveSlot === slot.slotNumber;
+
+    this.sendToParticipant(participantId, {
+      type: "participant:removed",
+      roomId: room.roomId,
+      slotNumber: slot.slotNumber,
+    });
+
+    const sockets = this.playerSockets.get(participantId);
+    if (sockets) {
+      for (const playerWs of sockets) {
+        this.socketMeta.delete(playerWs);
+        try {
+          playerWs.close(4001, "removed_by_host");
+        } catch {}
+      }
+      this.playerSockets.delete(participantId);
+    }
+
+    this.clearSlot(slot);
+    if (liveChanged) {
+      room.liveSlot = null;
+    }
+    await this.ctx.storage.put("room", room);
+    await this.appendAudit("participant_removed_by_host", {
+      roomId: room.roomId,
+      slotNumber: slot.slotNumber,
+      participantId,
+      participantName,
+    });
+
+    this.broadcastToHosts({
+      type: "slot:status",
+      slotNumber: slot.slotNumber,
+      participantId: null,
+      participantName: null,
+      connected: false,
+      state: slot.state,
+    });
+    this.broadcastToHosts({
+      type: "slot:preview",
+      slotNumber: slot.slotNumber,
+      participantId: null,
+      preview: null,
+    });
+    this.broadcastToHosts({
+      type: "slot:final",
+      slotNumber: slot.slotNumber,
+      participantId: null,
+      finalImage: null,
+    });
+    this.broadcastToHosts({
+      type: "slot:grade",
+      slotNumber: slot.slotNumber,
+      participantId: null,
+      grade: null,
+    });
+    if (liveChanged) {
+      this.broadcastToHosts({ type: "live:changed", liveSlot: null });
+    }
+    return true;
   }
 
   private attachSocketHandlers(ws: WebSocket): void {
@@ -551,6 +632,17 @@ export class RoomDurableObject {
         finalImage: slot.finalImage,
       });
       this.sendToParticipant(slot.participantId, { type: "answer:lock", locked: false });
+      return;
+    }
+
+    if (message.type === "participant:remove") {
+      const payload = message as ParticipantRemoveMessage;
+      const slot = this.findSlotByNumber(room, payload.slotNumber);
+      if (!slot || !slot.participantId) {
+        this.send(ws, { type: "error", error: "invalid_slot_number" });
+        return;
+      }
+      await this.removeParticipantBySlot(room, slot);
       return;
     }
 

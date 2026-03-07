@@ -204,6 +204,11 @@ export function renderLobbyHtml(roomId: string): string {
     .btn { padding:8px 12px; border:none; border-radius:8px; color:#fff; cursor:pointer; font:inherit; }
     .btn.main { background:var(--accent); }
     .btn.sub { background:#475569; }
+    .participants { margin-top:8px; display:grid; gap:6px; }
+    .participantRow { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; }
+    .participantName { font-size:14px; color:#0f172a; }
+    .smallBtn { padding:6px 10px; border:none; border-radius:6px; background:#b91c1c; color:#fff; cursor:pointer; font:inherit; font-size:12px; }
+    .smallBtn:disabled { opacity:0.5; cursor:not-allowed; }
     .meta { color:var(--muted); font-size:13px; }
     .publicLink { margin-top:8px; display:grid; gap:4px; }
     a { color:#0f766e; text-decoration:none; word-break:break-all; }
@@ -217,6 +222,7 @@ export function renderLobbyHtml(roomId: string): string {
       <div class="meta">ルームコード</div>
       <div id="roomCode">${roomId}</div>
       <div class="meta">参加中: <span id="joinedCount">0</span> 人</div>
+      <div id="participantList" class="participants"></div>
     </section>
 
     <section class="card">

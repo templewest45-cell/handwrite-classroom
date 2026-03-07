@@ -408,7 +408,7 @@
         if (s) {
           s.connected = m.connected;
           if (m.state) s.state = m.state;
-          if (typeof m.participantId === "string") s.participantId = m.participantId;
+          if (typeof m.participantId === "string" || m.participantId === null) s.participantId = m.participantId;
           if (typeof m.participantName === "string" || m.participantName === null) s.participantName = m.participantName;
         }
       } else if (m.type === "slot:preview") {

@@ -37,6 +37,11 @@ export interface ResubmitAllowMessage extends BaseWsMessage {
   slotNumber: number;
 }
 
+export interface ParticipantRemoveMessage extends BaseWsMessage {
+  type: "participant:remove";
+  slotNumber: number;
+}
+
 export function parseWsMessage(input: unknown): BaseWsMessage | null {
   if (typeof input !== "string") {
     return null;

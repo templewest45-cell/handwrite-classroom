@@ -223,6 +223,13 @@
     socket.onclose = (ev) => {
       ws = null;
       locked = true;
+      if (ev.code === 4001) {
+        participantId = null;
+        clearResumeToken();
+        setStatus("先生により参加から削除されました。再参加してください。");
+        updateControlState();
+        return;
+      }
       setStatus(roomDeleted ? "ルーム削除済み" : "WS切断 (code " + ev.code + ")");
       updateControlState();
       if (!roomDeleted && participantId) {
@@ -296,6 +303,15 @@
         updateQuestion(currentQuestionPos, "ルームは削除されました");
         clearCanvas(false);
         if (ws) ws.close();
+      } else if (m.type === "participant:removed") {
+        participantId = null;
+        locked = true;
+        clearResumeToken();
+        setGradeBanner(null);
+        setStatus("先生により参加から削除されました。再参加してください。");
+        updateQuestion(currentQuestionPos, "参加から削除されました。もう一度参加してください。");
+        clearCanvas(false);
+        if (ws) ws.close(1000, "removed_notice_ack");
       } else if (m.type === "error") {
         setStatus("エラー: " + m.error);
       }

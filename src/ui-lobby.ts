@@ -11,6 +11,7 @@
   const statusEl = document.getElementById("status");
   const questionEl = document.getElementById("question");
   const joinedEl = document.getElementById("joinedCount");
+  const participantListEl = document.getElementById("participantList");
   const startBtn = document.getElementById("startBtn");
 
   let ws = null;
@@ -39,11 +40,36 @@
       questionEl.textContent = "問題: " + (model.questionText || ("第" + model.currentQuestionPos + "問"));
     }
 
-    const joined = Object.values(model.slots).filter((s) => !!s.participantId).length;
+    const joinedSlots = Object.values(model.slots)
+      .filter((s) => !!s.participantId)
+      .sort((a, b) => (a.slotNumber || 0) - (b.slotNumber || 0));
+    const joined = joinedSlots.length;
     joinedEl.textContent = String(joined);
+    if (participantListEl) {
+      participantListEl.innerHTML = "";
+      if (joinedSlots.length === 0) {
+        participantListEl.innerHTML = "<div class='meta'>まだ参加者はいません</div>";
+      } else {
+        for (const s of joinedSlots) {
+          const row = document.createElement("div");
+          row.className = "participantRow";
+          const name = s.participantName || "名前未設定";
+          row.innerHTML =
+            "<div class='participantName'>slot " + s.slotNumber + ": " + name + "</div>" +
+            "<button class='smallBtn' data-slot='" + s.slotNumber + "'>削除</button>";
+          participantListEl.appendChild(row);
+        }
+      }
+    }
 
     const connected = !!ws && ws.readyState === 1;
     startBtn.disabled = !connected || model.status === "OPEN";
+    if (participantListEl) {
+      const removeBtns = participantListEl.querySelectorAll("button[data-slot]");
+      for (const btn of removeBtns) {
+        btn.disabled = !connected;
+      }
+    }
   }
 
   function connect() {
@@ -87,7 +113,7 @@
       } else if (m.type === "slot:status") {
         const s = model.slots[m.slotNumber];
         if (s) {
-          if (typeof m.participantId === "string") s.participantId = m.participantId;
+          if (typeof m.participantId === "string" || m.participantId === null) s.participantId = m.participantId;
           if (typeof m.participantName === "string" || m.participantName === null) s.participantName = m.participantName;
           s.connected = !!m.connected;
           if (m.state) s.state = m.state;
@@ -115,6 +141,20 @@
       location.href = hostUrl;
     }, 150);
   });
+  if (participantListEl) {
+    participantListEl.addEventListener("click", (ev) => {
+      const target = ev.target;
+      if (!(target instanceof HTMLElement)) return;
+      const btn = target.closest("button[data-slot]");
+      if (!btn) return;
+      const slotNumber = Number(btn.getAttribute("data-slot"));
+      if (!Number.isInteger(slotNumber) || slotNumber < 1) return;
+      if (!confirm("slot " + slotNumber + " の参加者を削除しますか？")) return;
+      if (!send({ type: "participant:remove", slotNumber })) {
+        setStatus("未接続です", true);
+      }
+    });
+  }
 
   updateView();
   connect();
