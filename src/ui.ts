@@ -82,6 +82,9 @@ export function renderHomeHtml(): string {
     </section>
     <section class="card">
       <h2>2. 使い方</h2>
+      <div class="row" style="margin-top:8px;">
+        <a href="/guide" style="text-decoration:none; display:inline-block; background:#475569; color:#fff; border-radius:8px; padding:8px 12px;">詳細な使い方を見る</a>
+      </div>
       <ol>
         <li>定員（2 / 4 / 6 / 8）を選ぶ</li>
         <li>問題を入力する（1行1問）。必要ならテキストファイルを読み込み、「テキストファイルをテキスト欄に反映」を押す</li>
@@ -95,6 +98,84 @@ export function renderHomeHtml(): string {
     </section>
   </main>
 <script>${renderHomeScript()}</script>
+</body>
+</html>`;
+}
+
+export function renderGuideHtml(): string {
+  return `<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>詳細な使い方</title>
+  <style>
+    :root { --bg:#f8fafc; --line:#cbd5e1; --text:#0f172a; --muted:#475569; --accent:#0f766e; }
+    body {
+      font-family: "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+      font-size:18px;
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+    }
+    main { max-width:980px; margin:0 auto; padding:18px 12px 36px; display:grid; gap:12px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .btn { text-decoration:none; display:inline-block; background:#475569; color:#fff; border-radius:8px; padding:8px 12px; }
+    h1 { margin:0 0 6px; }
+    h2 { margin:0 0 8px; }
+    p { margin:0; color:var(--muted); }
+    ol { margin:8px 0 0; color:#334155; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <h1>詳細な使い方</h1>
+      <p>現在の仕様に合わせた操作手順です。</p>
+      <div class="row" style="margin-top:8px;">
+        <a class="btn" href="/">トップへ戻る</a>
+      </div>
+    </section>
+    <section class="card">
+      <h2>1. ルーム準備</h2>
+      <ol>
+        <li>定員（2 / 4 / 6 / 8）を選ぶ</li>
+        <li>問題を1行1問で入力する</li>
+        <li>必要ならテキストファイルを反映する</li>
+        <li>「ルームを作成」でロビーへ進む</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>2. ロビー運用</h2>
+      <ol>
+        <li>参加URLまたはQRを配布する</li>
+        <li>参加者名一覧を確認する</li>
+        <li>誤参加は「削除」で外す</li>
+        <li>「解答を開始」で教師画面へ進む</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>3. 教師画面</h2>
+      <ol>
+        <li>採点行で ○ / × / 再 を使う</li>
+        <li>必要なら「追記」で青ペンコメントを反映する</li>
+        <li>授業終了は「終了」または「ルーム削除」</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>4. 生徒画面の表示</h2>
+      <ol>
+        <li>待機・ロック中: 「しばらくまってね」</li>
+        <li>終了時: 終了メッセージと30秒カウントダウン</li>
+        <li>30秒後: 自動クローズを試行（不可時は終了画面へ遷移）</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>5. スクリーンショット注釈</h2>
+      <p>詳しい画面別説明は SCREENSHOT_GUIDE.md を参照してください。</p>
+    </section>
+  </main>
 </body>
 </html>`;
 }

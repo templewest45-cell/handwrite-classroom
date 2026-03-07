@@ -13,7 +13,7 @@ import {
   randomId,
   sha256Hex,
 } from "./shared";
-import { renderHomeHtml, renderHostHtml, renderLobbyHtml, renderPlayerHtml, renderSummaryHtml } from "./ui";
+import { renderGuideHtml, renderHomeHtml, renderHostHtml, renderLobbyHtml, renderPlayerHtml, renderSummaryHtml } from "./ui";
 
 async function getRoomStub(env: Env, roomId: string): Promise<DurableObjectStub> {
   const id = env.ROOM_DO.idFromName(roomId);
@@ -27,6 +27,9 @@ const api = {
 
     if (request.method === "GET" && path === "/") {
       return htmlResponse(renderHomeHtml());
+    }
+    if (request.method === "GET" && path === "/guide") {
+      return htmlResponse(renderGuideHtml());
     }
     if (request.method === "GET" && path === "/favicon.ico") {
       return iconResponse();
