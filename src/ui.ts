@@ -149,7 +149,6 @@ export function renderHostHtml(roomId: string): string {
       <strong>ホストルーム: ${roomId}</strong>
       <input id="hostKey" type="hidden" />
       <button class="control" id="connectBtn">接続</button>
-      <button class="control secondary" id="disconnectBtn">切断</button>
       <button class="control" id="openBtn">開始</button>
       <button class="control secondary" id="showResultBtn">結果を表示</button>
       <button class="control secondary" id="endBtn">終了</button>
@@ -169,7 +168,7 @@ export function renderHostHtml(roomId: string): string {
       <div id="viewOptions">
         <label><input id="showNextQuestionToggle" type="checkbox" /> 次の問題文を表示</label>
         <label><input id="showAnswersToggle" type="checkbox" /> 生徒の解答を表示</label>
-        <label><input id="showLogToggle" type="checkbox" checked /> 管理ログを表示</label>
+        <label><input id="showLogToggle" type="checkbox" /> 管理ログを表示</label>
       </div>
     </section>
     <section id="judgePanel">

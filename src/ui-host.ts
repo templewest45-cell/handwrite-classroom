@@ -4,7 +4,6 @@
   const qs = new URLSearchParams(location.search);
   const hostKeyEl = document.getElementById("hostKey");
   const connectBtn = document.getElementById("connectBtn");
-  const disconnectBtn = document.getElementById("disconnectBtn");
   const openBtn = document.getElementById("openBtn");
   const showResultBtn = document.getElementById("showResultBtn");
   const endBtn = document.getElementById("endBtn");
@@ -43,7 +42,7 @@
   let selectedJudgeSlot = null;
   let showNextQuestion = false;
   let showAnswers = false;
-  let showLog = true;
+  let showLog = false;
   let model = {
     status: "CREATED",
     currentQuestionPos: 1,
@@ -123,7 +122,6 @@
     const connected = isConnected();
     const hostKeyPresent = !!hostKeyEl.value.trim();
     connectBtn.disabled = connected;
-    disconnectBtn.disabled = !connected;
     hostKeyEl.disabled = connected || roomDeleted;
     deleteBtn.disabled = roomDeleted;
     clearLiveBtn.disabled = !connected || model.liveSlot === null;
@@ -519,15 +517,6 @@
   }
 
   connectBtn.addEventListener("click", connect);
-  disconnectBtn.addEventListener("click", () => {
-    manualDisconnect = true;
-    pendingControlMessage = null;
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
-    if (ws) ws.close(1000, "manual_disconnect");
-  });
   clearLiveBtn.addEventListener("click", () => sendControlAction({ type: "live:set", slotNumber: null }));
   openBtn.addEventListener("click", () => sendControlAction({ type: "control:open" }));
   showResultBtn.addEventListener("click", () => {
