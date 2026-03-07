@@ -219,6 +219,9 @@ export function renderLobbyHtml(roomId: string): string {
   <main>
     <section class="card">
       <h1>参加ロビー</h1>
+      <div class="row" style="margin-bottom:8px;">
+        <a class="btn sub" href="/" style="text-decoration:none;">ルーム作成に戻る</a>
+      </div>
       <div class="meta">ルームコード</div>
       <div id="roomCode">${roomId}</div>
       <div class="meta">参加中: <span id="joinedCount">0</span> 人</div>
