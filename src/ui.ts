@@ -126,6 +126,8 @@ export function renderGuideHtml(): string {
     h2 { margin:0 0 8px; }
     p { margin:0; color:var(--muted); }
     ol { margin:8px 0 0; color:#334155; }
+    .shot { width:100%; border:1px solid var(--line); border-radius:10px; background:#fff; margin-top:10px; }
+    .caption { margin-top:8px; color:#334155; font-size:15px; }
   </style>
 </head>
 <body>
@@ -173,7 +175,67 @@ export function renderGuideHtml(): string {
     </section>
     <section class="card">
       <h2>5. スクリーンショット注釈</h2>
-      <p>詳しい画面別説明は SCREENSHOT_GUIDE.md を参照してください。</p>
+      <p>主要画面の機能を、スクリーンショットに合わせて説明します。</p>
+    </section>
+
+    <section class="card">
+      <h2>5-1. 参加ロビー（初期）</h2>
+      <img class="shot" src="/guide-assets/lobby-initial.png" alt="参加ロビー 初期" />
+      <ol>
+        <li>ルーム作成に戻る: トップ画面へ戻る</li>
+        <li>ルームコード: 参加対象の識別子</li>
+        <li>生徒参加用QR / 参加URL: 生徒へ配布する参加入口</li>
+        <li>解答を開始: 教師画面へ進む</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>5-2. 参加ロビー（参加者あり）</h2>
+      <img class="shot" src="/guide-assets/lobby-participants.png" alt="参加ロビー 参加者表示" />
+      <ol>
+        <li>参加中: 現在の参加人数</li>
+        <li>slot 行: 参加者名の確認</li>
+        <li>削除: 誤参加・不要参加の除外</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>5-3. 教師画面（採点パネル）</h2>
+      <img class="shot" src="/guide-assets/host-panel.png" alt="教師画面 採点パネル" />
+      <ol>
+        <li>上部操作: 開始 / 結果表示 / 終了 / ルーム削除</li>
+        <li>参加生徒と採点: 生徒ごとに採点操作</li>
+        <li>○ / × / 再: 採点と再提出許可</li>
+        <li>追記: 教師追記（青）を開く</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>5-4. 教師の追記（青）</h2>
+      <img class="shot" src="/guide-assets/host-annotation.png" alt="教師の追記画面" />
+      <ol>
+        <li>対象: どの生徒の解答に追記するか表示</li>
+        <li>青ペンで書き込み: 解答画像へ直接追記</li>
+        <li>追記を反映: 生徒画面へ即時反映</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>5-5. 生徒画面（待機中）</h2>
+      <img class="shot" src="/guide-assets/player-wait.png" alt="生徒画面 待機中" />
+      <ol>
+        <li>しばらくまってね: 開始待ち / ロック中の表示</li>
+        <li>提出ボタン無効: 解答可能になるまで押せない</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>5-6. 生徒画面（授業終了）</h2>
+      <img class="shot" src="/guide-assets/player-ended.png" alt="生徒画面 授業終了" />
+      <ol>
+        <li>終了メッセージ: クラス終了を明示</li>
+        <li>自動クローズ: 30秒後に閉じる試行（不可時は終了画面へ遷移）</li>
+      </ol>
     </section>
   </main>
 </body>
