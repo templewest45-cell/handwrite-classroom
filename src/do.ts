@@ -1091,6 +1091,14 @@ export class RoomDurableObject {
             resumeSlot.participantName = participantName;
           }
           await this.ctx.storage.put("room", room);
+          this.broadcastToHosts({
+            type: "slot:status",
+            slotNumber: resumeSlot.slotNumber,
+            participantId: resumeSlot.participantId,
+            participantName: resumeSlot.participantName,
+            connected: resumeSlot.connected,
+            state: resumeSlot.state,
+          });
           await this.appendAudit("participant_resumed", {
             roomId: room.roomId,
             slotNumber: resumeSlot.slotNumber,
@@ -1131,6 +1139,14 @@ export class RoomDurableObject {
       joinSlot.grade = null;
 
       await this.ctx.storage.put("room", room);
+      this.broadcastToHosts({
+        type: "slot:status",
+        slotNumber: joinSlot.slotNumber,
+        participantId: joinSlot.participantId,
+        participantName: joinSlot.participantName,
+        connected: joinSlot.connected,
+        state: joinSlot.state,
+      });
       await this.appendAudit("participant_joined", {
         roomId: room.roomId,
         slotNumber: joinSlot.slotNumber,
