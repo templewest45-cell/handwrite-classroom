@@ -25,6 +25,7 @@ import {
   PreviewUpdateMessage,
   ResubmitAllowMessage,
   StrokeBatchMessage,
+  TeacherAnnotateMessage,
 } from "./protocol";
 
 export class RoomDurableObject {
@@ -643,6 +644,53 @@ export class RoomDurableObject {
         return;
       }
       await this.removeParticipantBySlot(room, slot);
+      return;
+    }
+
+    if (message.type === "teacher:annotate") {
+      const payload = message as TeacherAnnotateMessage;
+      const slot = this.findSlotByNumber(room, payload.slotNumber);
+      if (!slot || !slot.participantId) {
+        this.send(ws, { type: "error", error: "invalid_slot_number" });
+        return;
+      }
+      if (typeof payload.image !== "string" || !payload.image) {
+        this.send(ws, { type: "error", error: "invalid_image" });
+        return;
+      }
+      if (!slot.finalImage && !slot.draftPreview) {
+        this.send(ws, { type: "error", error: "slot_has_no_answer_image" });
+        return;
+      }
+      const image = payload.image.slice(0, 1_000_000);
+      slot.draftPreview = image;
+      if (slot.finalImage) {
+        slot.finalImage = image;
+      }
+      await this.ctx.storage.put("room", room);
+      await this.appendAudit("teacher_annotated_answer", {
+        roomId: room.roomId,
+        slotNumber: slot.slotNumber,
+        participantId: slot.participantId,
+      });
+      this.broadcastToHosts({
+        type: "slot:preview",
+        slotNumber: slot.slotNumber,
+        participantId: slot.participantId,
+        preview: slot.draftPreview,
+      });
+      if (slot.finalImage) {
+        this.broadcastToHosts({
+          type: "slot:final",
+          slotNumber: slot.slotNumber,
+          participantId: slot.participantId,
+          finalImage: slot.finalImage,
+        });
+      }
+      this.sendToParticipant(slot.participantId, {
+        type: "answer:teacher_note",
+        image,
+      });
       return;
     }
 

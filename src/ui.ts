@@ -122,6 +122,10 @@ export function renderHostHtml(roomId: string): string {
     .judgeMeta { font-size:12px; color:#475569; }
     .judgeButtons { display:flex; gap:6px; flex-wrap:wrap; }
     .judgeButtons button { min-width:48px; }
+    #teacherNotePanel { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; display:none; }
+    #teacherNotePanel h2 { margin:0 0 8px; font-size:16px; }
+    #teacherNoteCanvas { width:100%; max-width:960px; height:auto; border:1px solid var(--line); border-radius:8px; background:#fff; touch-action:none; display:block; }
+    #teacherNoteMeta { font-size:12px; color:#475569; margin-bottom:8px; }
     .slot { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px; cursor:pointer; }
     .slot.disabled { opacity:0.65; cursor:default; }
     .slot.live { outline:2px solid var(--accent); }
@@ -180,6 +184,16 @@ export function renderHostHtml(roomId: string): string {
     <section id="judgePanel">
       <h2>参加生徒と採点</h2>
       <div id="judgeList"></div>
+    </section>
+    <section id="teacherNotePanel">
+      <h2>教師の追記（青）</h2>
+      <div id="teacherNoteMeta">対象: -</div>
+      <canvas id="teacherNoteCanvas" width="960" height="640"></canvas>
+      <div class="row" style="margin-top:8px;">
+        <button id="teacherNoteSaveBtn" class="control">追記を反映</button>
+        <button id="teacherNoteResetBtn" class="control secondary">追記をクリア</button>
+        <button id="teacherNoteCancelBtn" class="control secondary">閉じる</button>
+      </div>
     </section>
     <div id="realtimeBar">LIVE: なし / ストローク: 0 / 配信: 待機</div>
     <div id="slots"></div>

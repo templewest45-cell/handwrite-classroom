@@ -293,6 +293,11 @@
         if (typeof m.finalImage === "string" && m.finalImage) {
           void drawImageFromDataUrl(m.finalImage);
         }
+      } else if (m.type === "answer:teacher_note") {
+        if (typeof m.image === "string" && m.image) {
+          void drawImageFromDataUrl(m.image);
+          setStatus("先生の追記を反映しました");
+        }
       } else if (m.type === "room:deleted") {
         roomDeleted = true;
         locked = true;

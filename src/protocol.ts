@@ -42,6 +42,12 @@ export interface ParticipantRemoveMessage extends BaseWsMessage {
   slotNumber: number;
 }
 
+export interface TeacherAnnotateMessage extends BaseWsMessage {
+  type: "teacher:annotate";
+  slotNumber: number;
+  image: string;
+}
+
 export function parseWsMessage(input: unknown): BaseWsMessage | null {
   if (typeof input !== "string") {
     return null;

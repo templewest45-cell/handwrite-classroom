@@ -20,9 +20,16 @@
   const showAnswersToggleEl = document.getElementById("showAnswersToggle");
   const showLogToggleEl = document.getElementById("showLogToggle");
   const judgeListEl = document.getElementById("judgeList");
+  const teacherNotePanelEl = document.getElementById("teacherNotePanel");
+  const teacherNoteMetaEl = document.getElementById("teacherNoteMeta");
+  const teacherNoteCanvasEl = document.getElementById("teacherNoteCanvas");
+  const teacherNoteSaveBtn = document.getElementById("teacherNoteSaveBtn");
+  const teacherNoteResetBtn = document.getElementById("teacherNoteResetBtn");
+  const teacherNoteCancelBtn = document.getElementById("teacherNoteCancelBtn");
   const realtimeBarEl = document.getElementById("realtimeBar");
   const slotsEl = document.getElementById("slots");
   const logEl = document.getElementById("log");
+  const teacherNoteCtx = teacherNoteCanvasEl ? teacherNoteCanvasEl.getContext("2d") : null;
 
   hostKeyEl.value = qs.get("hostKey") || "";
   const summaryUrl = location.origin + "/summary/" + roomId + "?hostKey=" + encodeURIComponent(hostKeyEl.value || "");
@@ -43,6 +50,10 @@
   let showNextQuestion = false;
   let showAnswers = false;
   let showLog = false;
+  let teacherNoteSlot = null;
+  let teacherNoteBaseImage = null;
+  let teacherNoteDrawing = false;
+  let teacherNoteLast = null;
   let model = {
     status: "CREATED",
     currentQuestionPos: 1,
@@ -56,6 +67,62 @@
   let liveLastStrokeAt = 0;
   let liveStrokeCount = 0;
   let liveWindowStart = Date.now();
+
+  function teacherNotePointer(ev) {
+    if (!teacherNoteCanvasEl) return { x: 0, y: 0 };
+    const rect = teacherNoteCanvasEl.getBoundingClientRect();
+    return {
+      x: Math.round((ev.clientX - rect.left) * (teacherNoteCanvasEl.width / rect.width)),
+      y: Math.round((ev.clientY - rect.top) * (teacherNoteCanvasEl.height / rect.height)),
+    };
+  }
+
+  function closeTeacherNotePanel() {
+    teacherNoteSlot = null;
+    teacherNoteBaseImage = null;
+    if (teacherNotePanelEl) teacherNotePanelEl.style.display = "none";
+    if (teacherNoteMetaEl) teacherNoteMetaEl.textContent = "対象: -";
+    setControlState();
+  }
+
+  function drawTeacherNoteBaseImage(src) {
+    if (!teacherNoteCanvasEl || !teacherNoteCtx) return Promise.resolve(false);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        teacherNoteCtx.clearRect(0, 0, teacherNoteCanvasEl.width, teacherNoteCanvasEl.height);
+        teacherNoteCtx.drawImage(img, 0, 0, teacherNoteCanvasEl.width, teacherNoteCanvasEl.height);
+        resolve(true);
+      };
+      img.onerror = () => resolve(false);
+      img.src = src;
+    });
+  }
+
+  async function openTeacherNotePanel(slotNumber) {
+    const slot = model.slots[slotNumber];
+    if (!slot || !slot.participantId) {
+      alert("参加者がいない slot は追記できません。");
+      return;
+    }
+    const base = slot.finalImage || slot.draftPreview;
+    if (!base) {
+      alert("まだ解答画像がありません。");
+      return;
+    }
+    const ok = await drawTeacherNoteBaseImage(base);
+    if (!ok) {
+      alert("追記対象画像の読込に失敗しました。");
+      return;
+    }
+    teacherNoteSlot = slotNumber;
+    teacherNoteBaseImage = base;
+    if (teacherNoteMetaEl) {
+      teacherNoteMetaEl.textContent = "対象: slot " + slotNumber + " / " + (slot.participantName || slot.participantId);
+    }
+    if (teacherNotePanelEl) teacherNotePanelEl.style.display = "";
+    setControlState();
+  }
 
   function questionTextAt(pos) {
     const p = Math.max(1, Number(pos) || 1);
@@ -124,6 +191,8 @@
     connectBtn.disabled = connected;
     hostKeyEl.disabled = connected || roomDeleted;
     deleteBtn.disabled = roomDeleted;
+    if (teacherNoteSaveBtn) teacherNoteSaveBtn.disabled = !connected || !Number.isFinite(teacherNoteSlot);
+    if (teacherNoteResetBtn) teacherNoteResetBtn.disabled = !Number.isFinite(teacherNoteSlot);
     clearLiveBtn.disabled = !connected || model.liveSlot === null;
     openBtn.disabled = roomDeleted || model.status !== "CREATED" || !hostKeyPresent;
     showResultBtn.disabled = roomDeleted || !hostKeyPresent;
@@ -262,6 +331,7 @@
         "<button data-action='grade-o' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">○</button>" +
         "<button data-action='grade-x' data-slot='" + s.slotNumber + "'" + (canJudge ? "" : " disabled") + ">×</button>" +
         "<button data-action='resubmit' data-slot='" + s.slotNumber + "'>再</button>" +
+        "<button data-action='annotate' data-slot='" + s.slotNumber + "'" + (s.finalImage || s.draftPreview ? "" : " disabled") + ">追記</button>" +
         "</div>";
       judgeRow.addEventListener("click", () => {
         selectedJudgeSlot = s.slotNumber;
@@ -276,6 +346,7 @@
           if (action === "grade-o") return runJudgeShortcut("grade-o");
           if (action === "grade-x") return runJudgeShortcut("grade-x");
           if (action === "resubmit") return runJudgeShortcut("resubmit");
+          if (action === "annotate") return void openTeacherNotePanel(s.slotNumber);
         });
       }
       if (judgeListEl) {
@@ -540,6 +611,61 @@
     showLogToggleEl.addEventListener("change", () => {
       showLog = !!showLogToggleEl.checked;
       render();
+    });
+  }
+  if (teacherNoteCanvasEl && teacherNoteCtx) {
+    teacherNoteCanvasEl.addEventListener("pointerdown", (ev) => {
+      if (!Number.isFinite(teacherNoteSlot)) return;
+      teacherNoteDrawing = true;
+      teacherNoteLast = teacherNotePointer(ev);
+      teacherNoteCanvasEl.setPointerCapture(ev.pointerId);
+    });
+    teacherNoteCanvasEl.addEventListener("pointermove", (ev) => {
+      if (!teacherNoteDrawing || !teacherNoteLast) return;
+      const p = teacherNotePointer(ev);
+      teacherNoteCtx.save();
+      teacherNoteCtx.lineCap = "round";
+      teacherNoteCtx.lineJoin = "round";
+      teacherNoteCtx.lineWidth = 4;
+      teacherNoteCtx.strokeStyle = "#2563eb";
+      teacherNoteCtx.beginPath();
+      teacherNoteCtx.moveTo(teacherNoteLast.x, teacherNoteLast.y);
+      teacherNoteCtx.lineTo(p.x, p.y);
+      teacherNoteCtx.stroke();
+      teacherNoteCtx.restore();
+      teacherNoteLast = p;
+    });
+    const stopDraw = () => {
+      teacherNoteDrawing = false;
+      teacherNoteLast = null;
+    };
+    teacherNoteCanvasEl.addEventListener("pointerup", stopDraw);
+    teacherNoteCanvasEl.addEventListener("pointercancel", stopDraw);
+  }
+  if (teacherNoteResetBtn) {
+    teacherNoteResetBtn.addEventListener("click", () => {
+      if (typeof teacherNoteBaseImage === "string" && teacherNoteBaseImage) {
+        void drawTeacherNoteBaseImage(teacherNoteBaseImage);
+      }
+    });
+  }
+  if (teacherNoteCancelBtn) {
+    teacherNoteCancelBtn.addEventListener("click", closeTeacherNotePanel);
+  }
+  if (teacherNoteSaveBtn) {
+    teacherNoteSaveBtn.addEventListener("click", () => {
+      if (!teacherNoteCanvasEl || !Number.isFinite(teacherNoteSlot)) return;
+      const msg = {
+        type: "teacher:annotate",
+        slotNumber: teacherNoteSlot,
+        image: teacherNoteCanvasEl.toDataURL("image/webp", 0.92),
+      };
+      if (!sendWs(msg)) {
+        alert("未接続のため反映できません。");
+        return;
+      }
+      log("追記を反映: slot " + teacherNoteSlot);
+      closeTeacherNotePanel();
     });
   }
   deleteBtn.addEventListener("click", () => { void deleteRoom(); });
