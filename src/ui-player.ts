@@ -29,6 +29,8 @@
   let batch = [];
   let currentQuestionPos = 1;
   let roomStatus = "CREATED";
+  const waitMessage = "しばらくまってね";
+  const classEndedMessage = "このクラスは終了しました。ページを閉じてください。";
   const resumeKey = "hwc:resume:" + roomId;
   const resumeNameKey = "hwc:resume-name:" + roomId;
   const wsProto = location.protocol === "https:" ? "wss" : "ws";
@@ -113,19 +115,19 @@
       locked = true;
       submitted = false;
       renderQuestion("問題: 開始待ち");
-      setStatus("開始待ち");
+      setStatus(waitMessage);
       return;
     }
     if (roomStatus === "LOCKED") {
       locked = true;
-      setStatus("ロック中");
+      setStatus(waitMessage);
       return;
     }
     if (roomStatus === "CLOSED") {
       locked = true;
       submitted = false;
-      renderQuestion("このクラスは終了しました。ページを閉じてください。");
-      setStatus("このクラスは終了しました。ページを閉じてください。");
+      renderQuestion(classEndedMessage);
+      setStatus(classEndedMessage);
       return;
     }
     locked = false;
@@ -151,9 +153,9 @@
     canvasWrap.classList.toggle("locked", locked);
     lockStateEl.classList.remove("warn", "ok");
     if (locked) {
-      lockStateEl.textContent = submitted ? "提出済み" : "ロック中";
+      lockStateEl.textContent = submitted ? "提出済み" : waitMessage;
       lockStateEl.classList.add("warn");
-      lockOverlay.textContent = submitted ? "提出済み" : "ホストがロック中";
+      lockOverlay.textContent = submitted ? "提出済み" : waitMessage;
       return;
     }
     lockStateEl.textContent = "入力可能";
@@ -244,7 +246,7 @@
         updateControlState();
         return;
       }
-      setStatus(roomDeleted ? "ルーム削除済み" : "WS切断 (code " + ev.code + ")");
+      setStatus(roomDeleted || roomStatus === "CLOSED" ? classEndedMessage : "WS切断 (code " + ev.code + ")");
       updateControlState();
       if (!roomDeleted && participantId) {
         reconnectAttempts += 1;
@@ -278,17 +280,17 @@
           updateQuestion(m.currentQuestionPos, m.questionText);
         }
       } else if (m.type === "answer:lock") {
-        if (roomStatus !== "CREATED") {
+        if (roomStatus !== "CREATED" && roomStatus !== "CLOSED" && !roomDeleted) {
           locked = !!m.locked;
-          setStatus(locked ? "ロック中" : "入力可能");
+          setStatus(locked ? waitMessage : "入力可能");
         }
       } else if (m.type === "room:status") {
         applyRoomStatus(m.status);
-        if (roomStatus === "OPEN" || roomStatus === "LOCKED" || roomStatus === "CLOSED") {
+        if (roomStatus === "OPEN" || roomStatus === "LOCKED") {
           updateQuestion(m.currentQuestionPos, m.questionText);
         }
       } else if (m.type === "question:update") {
-        if (roomStatus !== "CREATED") {
+        if (roomStatus !== "CREATED" && roomStatus !== "CLOSED" && !roomDeleted) {
           updateQuestion(m.currentQuestionPos, m.questionText);
           locked = false;
           submitted = false;
@@ -317,9 +319,9 @@
         locked = true;
         participantId = null;
         clearResumeToken();
-        setStatus("このクラスは終了しました。ページを閉じてください。");
+        setStatus(classEndedMessage);
         setGradeBanner(null);
-        renderQuestion("このクラスは終了しました。ページを閉じてください。");
+        renderQuestion(classEndedMessage);
         clearCanvas(false);
         if (ws) ws.close();
       } else if (m.type === "participant:removed") {
