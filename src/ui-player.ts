@@ -111,7 +111,13 @@
       } catch {}
       setTimeout(() => {
         if (!document.hidden) {
-          location.replace("about:blank");
+          try {
+            window.open("", "_self");
+            window.close();
+          } catch {}
+        }
+        if (!document.hidden) {
+          location.replace("/?ended=1");
         }
       }, 300);
     }, 30000);
