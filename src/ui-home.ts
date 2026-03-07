@@ -1,9 +1,9 @@
 ﻿export function renderHomeScript(): string {
   return `(() => {
   const capacityEl = document.getElementById("capacity");
-  const csvFileEl = document.getElementById("csvFile");
-  const csvApplyBtn = document.getElementById("csvApplyBtn");
-  const csvStatusEl = document.getElementById("csvStatus");
+  const textFileEl = document.getElementById("textFile");
+  const textApplyBtn = document.getElementById("textApplyBtn");
+  const textStatusEl = document.getElementById("textStatus");
   const questionsEl = document.getElementById("questions");
   const createBtn = document.getElementById("createBtn");
   const statusEl = document.getElementById("status");
@@ -11,7 +11,7 @@
   const hostLinkEl = document.getElementById("hostLink");
   const playerLinkEl = document.getElementById("playerLink");
   const summaryLinkEl = document.getElementById("summaryLink");
-  let csvQuestions = [];
+  let fileQuestions = [];
 
   function setStatus(text, isError) {
     statusEl.textContent = text;
@@ -26,90 +26,34 @@
       .slice(0, 200);
   }
 
-  function parseCsvRows(text) {
-    const rows = [];
-    let row = [];
-    let field = "";
-    let i = 0;
-    let inQuotes = false;
-    const dq = String.fromCharCode(34);
-
-    while (i < text.length) {
-      const ch = text[i];
-      if (inQuotes) {
-        if (ch === dq) {
-          if (text[i + 1] === dq) {
-            field += dq;
-            i += 2;
-            continue;
-          }
-          inQuotes = false;
-          i += 1;
-          continue;
-        }
-        field += ch;
-        i += 1;
-        continue;
-      }
-      if (ch === dq) {
-        inQuotes = true;
-        i += 1;
-        continue;
-      }
-      if (ch === ",") {
-        row.push(field);
-        field = "";
-        i += 1;
-        continue;
-      }
-      if (ch === "\\n") {
-        row.push(field);
-        rows.push(row);
-        row = [];
-        field = "";
-        i += 1;
-        continue;
-      }
-      if (ch === "\\r") {
-        i += 1;
-        continue;
-      }
-      field += ch;
-      i += 1;
-    }
-    row.push(field);
-    rows.push(row);
-    return rows;
-  }
-
-  async function loadCsv() {
-    const file = csvFileEl.files && csvFileEl.files[0];
+  async function loadTextFile() {
+    const file = textFileEl.files && textFileEl.files[0];
     if (!file) {
-      csvQuestions = [];
-      csvStatusEl.textContent = "CSV未選択";
+      fileQuestions = [];
+      textStatusEl.textContent = "テキストファイル未選択";
       return;
     }
     try {
       const raw = await file.text();
-      const rows = parseCsvRows(raw);
-      const list = rows
-        .map((r) => (Array.isArray(r) && r.length > 0 ? String(r[0] || "").trim() : ""))
-        .filter((q) => q.length > 0);
-      csvQuestions = list.slice(0, 200);
-      csvStatusEl.textContent = "CSV取込: " + csvQuestions.length + "問";
+      const list = raw
+        .split(/\\r?\\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+      fileQuestions = list.slice(0, 200);
+      textStatusEl.textContent = "テキスト取込: " + fileQuestions.length + "問";
     } catch {
-      csvQuestions = [];
-      csvStatusEl.textContent = "CSV読込失敗";
+      fileQuestions = [];
+      textStatusEl.textContent = "テキスト読込失敗";
     }
   }
 
-  function applyCsvToTextarea() {
-    if (!csvQuestions.length) {
-      csvStatusEl.textContent = "取り込める問題がありません";
+  function applyTextToTextarea() {
+    if (!fileQuestions.length) {
+      textStatusEl.textContent = "取り込める問題がありません";
       return;
     }
-    questionsEl.value = csvQuestions.join("\\n");
-    csvStatusEl.textContent = "テキスト欄へ反映済み: " + csvQuestions.length + "問";
+    questionsEl.value = fileQuestions.join("\\n");
+    textStatusEl.textContent = "テキスト欄へ反映済み: " + fileQuestions.length + "問";
   }
 
   async function createRoom() {
@@ -155,7 +99,7 @@
   }
 
   createBtn.addEventListener("click", () => { void createRoom(); });
-  csvFileEl.addEventListener("change", () => { void loadCsv(); });
-  csvApplyBtn.addEventListener("click", applyCsvToTextarea);
+  textFileEl.addEventListener("change", () => { void loadTextFile(); });
+  textApplyBtn.addEventListener("click", applyTextToTextarea);
 })();`;
 }

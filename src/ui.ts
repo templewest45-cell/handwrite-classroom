@@ -28,7 +28,7 @@ export function renderHomeHtml(): string {
     button.secondary { background:#475569; }
     button:disabled { opacity:0.5; cursor:not-allowed; }
     #status { margin-top:8px; font-size:13px; color:#334155; }
-    #csvStatus { margin-top:6px; font-size:12px; color:#334155; }
+    #textStatus { margin-top:6px; font-size:12px; color:#334155; }
     #result { display:none; margin-top:10px; border-top:1px solid var(--line); padding-top:10px; }
     #result a { display:block; color:#0f766e; text-decoration:none; margin-top:6px; word-break:break-all; }
     #result a:hover { text-decoration:underline; }
@@ -52,13 +52,13 @@ export function renderHomeHtml(): string {
           </select>
         </label>
       </div>
-      <label style="margin-top:8px;">問題CSV（1列目を問題文として取り込み）
-        <input id="csvFile" type="file" accept=".csv,text/csv" />
+      <label style="margin-top:8px;">問題テキストファイル（1行1問）
+        <input id="textFile" type="file" accept=".txt,text/plain" />
       </label>
       <div class="row" style="margin-top:8px;">
-        <button id="csvApplyBtn" class="secondary" type="button">CSVをテキスト欄に反映</button>
+        <button id="textApplyBtn" class="secondary" type="button">テキストファイルをテキスト欄に反映</button>
       </div>
-      <div id="csvStatus">CSV未選択</div>
+      <div id="textStatus">テキストファイル未選択</div>
       <label style="margin-top:8px;">問題文（1行1問 / 空でもOK）
         <textarea id="questions" placeholder="3+5 はいくつ？&#10;次の漢字を書きなさい: 海"></textarea>
       </label>
@@ -76,9 +76,14 @@ export function renderHomeHtml(): string {
     <section class="card">
       <h2>2. 使い方</h2>
       <ol>
-        <li>Host URL を先生PCで開く（接続を押す）</li>
-        <li>Player URL を生徒へ配布（QRまたはリンク）</li>
-        <li>公開URL（summary）をプロジェクター/TVに表示</li>
+        <li>定員（4 / 6 / 8）を選ぶ</li>
+        <li>問題を入力する（1行1問）。必要ならテキストファイルを選び、「テキストファイルをテキスト欄に反映」を押す</li>
+        <li>「ルームを作成」を押し、参加ロビーへ移動する</li>
+        <li>参加ロビーの参加URLまたはQRを生徒に配布する</li>
+        <li>生徒全員が参加したら、参加ロビーで名前一覧を確認する</li>
+        <li>不要な参加者がいれば、ロビーの「削除」ボタンで外す</li>
+        <li>「解答を開始」を押して教師画面へ進む</li>
+        <li>教師画面で採点し、必要に応じて「結果を表示」または「終了」を使う</li>
       </ol>
     </section>
   </main>
