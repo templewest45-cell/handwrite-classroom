@@ -13,7 +13,13 @@ export function renderHomeHtml(): string {
   <title>Handwrite Classroom</title>
   <style>
     :root { --bg:#f8fafc; --line:#cbd5e1; --text:#0f172a; --muted:#475569; --accent:#0f766e; }
-    body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 0; background:var(--bg); color:var(--text); }
+    body {
+      font-family: "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+      font-size:18px;
+      margin: 0;
+      background:var(--bg);
+      color:var(--text);
+    }
     main { max-width: 860px; margin: 0 auto; padding: 18px 12px 36px; display:grid; gap:12px; }
     h1 { margin:0 0 4px; }
     h2 { margin:0; }
@@ -101,7 +107,13 @@ export function renderHostHtml(roomId: string): string {
   <title>ホスト ${roomId}</title>
   <style>
     :root { --bg:#f7fafc; --card:#fff; --line:#e2e8f0; --text:#1a202c; --accent:#0f766e; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:var(--bg); color:var(--text); }
+    body {
+      margin:0;
+      font-family: "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+      font-size:18px;
+      background:var(--bg);
+      color:var(--text);
+    }
     header { background:#fff; border-bottom:1px solid var(--line); padding:12px; position:sticky; top:0; }
     main { padding:12px; display:grid; gap:12px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -223,7 +235,13 @@ export function renderLobbyHtml(roomId: string): string {
   <title>参加ロビー ${roomId}</title>
   <style>
     :root { --bg:#f8fafc; --line:#cbd5e1; --text:#0f172a; --muted:#475569; --accent:#0f766e; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:var(--bg); color:var(--text); }
+    body {
+      margin:0;
+      font-family: "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+      font-size:18px;
+      background:var(--bg);
+      color:var(--text);
+    }
     main { max-width:980px; margin:0 auto; padding:14px; display:grid; gap:12px; }
     .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -291,7 +309,13 @@ export function renderPlayerHtml(roomId: string): string {
   <title>プレイヤー ${roomId}</title>
   <style>
     :root { --bg:#fffef8; --line:#d6d3d1; --text:#1c1917; --accent:#0369a1; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; color:var(--text); background:var(--bg); }
+    body {
+      margin:0;
+      font-family: "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+      font-size:18px;
+      color:var(--text);
+      background:var(--bg);
+    }
     header, main { padding:12px; }
     header { border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); }
     .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
@@ -383,7 +407,13 @@ export function renderSummaryHtml(roomId: string): string {
   <title>公開解答 ${roomId}</title>
   <style>
     :root { --bg:#f8fafc; --line:#cbd5e1; --text:#0f172a; --muted:#475569; }
-    body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; color:var(--text); background:var(--bg); }
+    body {
+      margin:0;
+      font-family: "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Yu Gothic UI", "Meiryo", ui-sans-serif, system-ui, sans-serif;
+      font-size:18px;
+      color:var(--text);
+      background:var(--bg);
+    }
     header, main { max-width:1200px; margin:0 auto; padding:12px; }
     header { position:sticky; top:0; background:rgba(248,250,252,0.95); backdrop-filter: blur(2px); border-bottom:1px solid var(--line); }
     h1 { margin:0 0 6px; font-size:24px; }
